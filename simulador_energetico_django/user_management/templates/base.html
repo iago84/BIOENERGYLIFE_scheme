@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+<nav>
+    <ul>
+        {% if user.is_authenticated %}
+        <li><a href="{% url 'index' %}">Inicio</a></li>
+        <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+        <li><a href="{% url 'login' %}">Login</a></li>
+        <li><a href="{% url 'register' %}">Registro</a></li>
+        {% endif %}
+    </ul>
+</nav>
+<div class="content">
+    {% block content %}{% endblock %}
+</div>
+<footer>
+    <nav>
+        <ul>
+            <li><a href="{% url 'cookie_policy' %}">Política de Cookies</a></li>
+            <li><a href="{% url 'legal_advise' %}">Aviso Legal</a></li>
+            <li><a href="{% url 'terms_and_conditions' %}">Términos y Condiciones</a></li>
+            <li><a href="{% url 'privacy_policy' %}">Política de Privacidad</a></li>
+        </ul>
+    </nav>
+
+</footer>
+</body>
+</html>

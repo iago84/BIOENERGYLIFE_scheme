@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">Mi Aplicación</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                    <!-- Links for logged-in users_app_main -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'index' %}">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+                    </li>
+                    {% else %}
+                    <!-- Links for guests (not logged in) -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">Registrarse</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Welcome Message (only if user is authenticated) -->
+    {% if user.is_authenticated %}
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="display-4 text-warning">¡Bienvenido, {{ user.username }}!</h1>
+            <p class="lead text-muted">Estamos contentos de que estés de vuelta. ¿Qué te gustaría hacer hoy?</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- User-specific Options -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Opciones para Clientes</h4>
+                </div>
+                <div class="card-body">
+                    <!-- General options for all users_app_main -->
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            Item1
+                        </li>
+                        <li class="list-group-item">
+                            Item2
+                        </li>
+
+                    </ul>
+
+                    <!-- If user is staff, show staff options -->
+                    {% if user.is_staff %}
+                    <div class="mt-4">
+                        <h5 class="text-warning">Opciones de Administrador</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+
+                            </li>
+                            <li class="list-group-item">
+
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- If user is superuser, show superuser options -->
+                    {% if user.is_superuser %}
+                    <div class="mt-4">
+                        <h5 class="text-danger">Opciones de Superusuario</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <a href="{% url 'admin:index' %}" class="btn btn-outline-danger btn-block">
+                                    Ir al Dashboard de Superusuario
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Button -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-4 text-center">
+            <a href="{% url 'logout' %}" class="btn btn-danger btn-lg">
+                Cerrar sesión
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

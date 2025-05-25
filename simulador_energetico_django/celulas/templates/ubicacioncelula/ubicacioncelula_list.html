@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}List UbicacionCelula{% endblock %}
+
+{% block content %}
+    <h1>List UbicacionCelula</h1>
+    <h2>List of {{ self.model_name }} Objects</h2>
+    <ul>
+        {% for object in object_list %}
+            <li>{{ object }}</li>
+        {% endfor %}
+    </ul>
+    {# Add more list content here if needed #}
+{% endblock %}

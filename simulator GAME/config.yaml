@@ -1,0 +1,4 @@
+simulacion:
+  velocidad: 1.0
+  ciclos_maximos: 1000
+  energia_inicial: 10

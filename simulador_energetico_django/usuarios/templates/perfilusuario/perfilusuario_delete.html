@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete PerfilUsuario{% endblock %}
+
+{% block content %}
+    <h1>Delete PerfilUsuario</h1>
+    <h2>Delete {{ self.model_name }}</h2>
+    <p>Are you sure you want to delete this {{ self.model_name }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Yes, delete it</button>
+    </form>
+    {# Add more delete content here if needed #}
+{% endblock %}
