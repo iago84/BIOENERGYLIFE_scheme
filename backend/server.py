@@ -124,89 +124,6 @@ def api_delete_conexion(cid):
     eliminar_conexion(cid)
     return jsonify({"ok": True})
 
-@app.route("/api/random_param", methods=["POST"])
-def api_random_param():
-    data = request.json  # {numCelulas, pctGerminadoras, ...}
-    # Llama aquí a tu función avanzada de randomización con parámetros
-    resultado = randomizar_organismo_param(data)
-    return jsonify({"ok": True, "resultado": resultado})
-
-@app.route("/api/celula/<cid>", methods=["GET"])
-def api_info_celula(cid):
-    celula = celulas_table.get(lambda c: c["id"] == cid)
-    if not celula:
-        return jsonify({"error": "Célula no encontrada"}), 404
-    return jsonify({"ok": True, "celula": celula})
-
-@app.route("/api/desconectar", methods=["POST"])
-def api_desconectar():
-    data = request.json  # {"origen": "C1", "destino": "C2"}
-    # Lógica para eliminar enlace de origen -> destino
-    desconectar_celulas(data["origen"], data["destino"])
-    return jsonify({"ok": True})
-
-
-@app.route("/api/organulo/<oid>", methods=["PATCH"])
-def api_editar_organulo(oid):
-    cambios = request.json
-    organulos_table.update(cambios, lambda o: o["id"] == oid)
-    return jsonify({"ok": True})
-
-
-from populate_db import todas_plantillas
-
-@app.route("/api/plantillas", methods=["GET"])
-def api_plantillas():
-    return jsonify({"plantillas": todas_plantillas})
-
-
-@app.route("/api/red", methods=["GET"])
-def api_red():
-    return jsonify(obtener_estado_red())
-
-@app.route("/api/celula", methods=["POST"])
-def api_crear_celula():
-    data = request.json
-    tipo = data["tipo"]
-    posicion = data["ubicacion"]
-    madre = data.get("madre")
-    celula_id = instanciar_celula_tipo(tipo, posicion, madre)
-    return jsonify({"ok": True, "celula_id": celula_id})
-
-@app.route("/api/celula/<cid>", methods=["PATCH"])
-def api_editar_celula(cid):
-    cambios = request.json
-    editar_celula(cid, cambios)
-    return jsonify({"ok": True})
-
-@app.route("/api/celula/<cid>", methods=["DELETE"])
-def api_eliminar_celula(cid):
-    eliminar_celula(cid)
-    return jsonify({"ok": True})
-
-@app.route("/api/conectar", methods=["POST"])
-def api_conectar():
-    data = request.json
-    conectar_celulas(data["origen"], data["destino"])
-    return jsonify({"ok": True})
-
-@app.route("/api/evolucionar", methods=["POST"])
-def api_evolucionar():
-    ciclos = request.json.get("ciclos", 1)
-    resultado = evolucionar(ciclos)
-    return jsonify({"ok": True, "resultado": resultado})
-
-@app.route("/api/clonar", methods=["POST"])
-def api_clonar():
-    data = request.json
-    nueva_id = clonar_celula(data["id"], data["ubicacion"])
-    return jsonify({"ok": True, "nueva_id": nueva_id})
-
-@app.route("/api/reset", methods=["POST"])
-def api_reset():
-    reiniciar_red()
-    return jsonify({"ok": True})
-
 @app.route('/')
 def index():
     return send_from_directory(app.static_folder, 'index.html')
@@ -279,148 +196,23 @@ def sembrar():
     })
     return jsonify({"mensaje": f"Célula {nueva_id} sembrada con éxito."})
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
 
 
 # === ENDPOINTS CRUD GENERADORES ===
-@app.route("/api/generadores", methods=["GET"])
-def api_generadores():
-    from db import generadores_table
-    return jsonify(generadores_table.all())
-
-@app.route("/api/generadores", methods=["POST"])
-def api_add_generador():
-    from db import generadores_table
-    generadores_table.insert(request.json)
-    return jsonify({"ok": True})
-
-@app.route("/api/generadores/<gid>", methods=["PATCH"])
-def api_update_generador(gid):
-    from db import generadores_table
-    generadores_table.update(request.json, lambda g: g["id"] == gid)
-    return jsonify({"ok": True})
-
-@app.route("/api/generadores/<gid>", methods=["DELETE"])
-def api_delete_generador(gid):
-    from db import generadores_table
-    generadores_table.remove(lambda g: g["id"] == gid)
-    return jsonify({"ok": True})
-
-# === ENDPOINTS CRUD ORGÁNULOS ===
-@app.route("/api/organulos", methods=["GET"])
-def api_organulos():
-    from db import organulos_table
-    return jsonify(organulos_table.all())
-
-@app.route("/api/organulos", methods=["POST"])
-def api_add_organulo():
-    from db import organulos_table
-    organulos_table.insert(request.json)
-    return jsonify({"ok": True})
-
-@app.route("/api/organulos/<oid>", methods=["PATCH"])
-def api_update_organulo(oid):
-    from db import organulos_table
-    organulos_table.update(request.json, lambda o: o["id"] == oid)
-    return jsonify({"ok": True})
-
-@app.route("/api/organulos/<oid>", methods=["DELETE"])
-def api_delete_organulo(oid):
-    from db import organulos_table
-    organulos_table.remove(lambda o: o["id"] == oid)
-    return jsonify({"ok": True})
-
-# === ENDPOINTS CRUD CÉLULAS ===
-@app.route("/api/celulas", methods=["GET"])
-def api_celulas():
-    from db import celulas_table
-    return jsonify(celulas_table.all())
-
-@app.route("/api/celulas", methods=["POST"])
-def api_add_celula():
-    from db import celulas_table
-    celulas_table.insert(request.json)
-    return jsonify({"ok": True})
-
-@app.route("/api/celulas/<cid>", methods=["PATCH"])
-def api_update_celula(cid):
-    from db import celulas_table
-    celulas_table.update(request.json, lambda c: c["id"] == cid)
-    return jsonify({"ok": True})
-
-@app.route("/api/celulas/<cid>", methods=["DELETE"])
-def api_delete_celula(cid):
-    from db import celulas_table
-    celulas_table.remove(lambda c: c["id"] == cid)
-    return jsonify({"ok": True})
-
-# === ENDPOINTS CRUD CONEXIONES ===
-@app.route("/api/conexiones", methods=["GET"])
-def api_conexiones():
-    from db import conexiones_table
-    return jsonify(conexiones_table.all())
-
-@app.route("/api/conexiones", methods=["POST"])
-def api_add_conexion():
-    from db import conexiones_table
-    conexiones_table.insert(request.json)
-    return jsonify({"ok": True})
-
 @app.route("/api/conexiones/<conid>", methods=["PATCH"])
 def api_update_conexion(conid):
     from db import conexiones_table
     conexiones_table.update(request.json, lambda c: c["id"] == conid)
     return jsonify({"ok": True})
 
-@app.route("/api/conexiones/<conid>", methods=["DELETE"])
-def api_delete_conexion(conid):
-    from db import conexiones_table
-    conexiones_table.remove(lambda c: c["id"] == conid)
-    return jsonify({"ok": True})
+
 
 # === ENDPOINTS RANDOM, EXPORT/IMPORT ===
-@app.route("/api/randomizar", methods=["POST"])
-def api_randomizar():
-    from controller import randomizar_organismo_param
-    return jsonify(randomizar_organismo_param(request.json))
-
-@app.route("/api/exportar", methods=["GET"])
-def api_exportar():
-    from db import celulas_table, organulos_table, conexiones_table
-    return jsonify({
-        "celulas": celulas_table.all(),
-        "organulos": organulos_table.all(),
-        "conexiones": conexiones_table.all()
-    })
-
-@app.route("/api/importar", methods=["POST"])
-def api_importar():
-    data = request.json
-    from db import celulas_table, organulos_table, conexiones_table
-    celulas_table.truncate(); organulos_table.truncate(); conexiones_table.truncate()
-    celulas_table.insert_multiple(data.get("celulas", []))
-    organulos_table.insert_multiple(data.get("organulos", []))
-    conexiones_table.insert_multiple(data.get("conexiones", []))
-    return jsonify({"ok": True})
 
 
-# -- Validación de datos en endpoint de creación de célula --
-from schemas import CelulaSchema
-
-@app.route("/api/celula", methods=["POST"])
-def api_crear_celula():
-    data = request.json
-    errors = CelulaSchema().validate(data)
-    if errors:
-        return jsonify({"ok": False, "errors": errors}), 400
-    # ... continuación de la lógica original ...
-
-
-# -- Log de errores global --
 import logging
 logging.basicConfig(filename='server_errors.log', level=logging.ERROR)
-
 @app.errorhandler(Exception)
 def handle_exception(e):
     import traceback
@@ -428,12 +220,6 @@ def handle_exception(e):
     return jsonify({"ok": False, "error": str(e)}), 500
 
 
-# -- Protección básica en producción --
-import os
-
 if __name__ == '__main__':
-    debug = os.environ.get("DEBUG", "1") == "1"
-    if not debug:
-        print("Modo producción: restringiendo endpoints abiertos")
-        # Aquí podrías restringir rutas, exigir login, etc.
-    app.run(debug=debug)
+    app.run(debug=True)
+

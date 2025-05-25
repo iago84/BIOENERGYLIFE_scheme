@@ -1,4 +1,4 @@
-// === app.js moderno para diseño y simulación celular ===
+// === app.js FULL STACK MODERNO ===
 
 class Celula {
     constructor(data) {
@@ -30,7 +30,7 @@ class Celula {
         ctx.strokeStyle = selected ? "#0af" : "#fff";
         ctx.stroke();
 
-        // Texto
+        // Texto identificador
         ctx.fillStyle = "#000";
         ctx.font = "12px monospace";
         ctx.fillText(`${this.id} (${this.energia_actual?.toFixed(1) ?? "?"})`, this.x - 30, this.y - 35);
@@ -63,6 +63,7 @@ class SimuladorCelular {
         this.celulas = [];
         this.relaciones = [];
         this.selectedCell = null;
+        this.celulaAEnlazar = null;
 
         // Zoom & Pan
         this.scale = 1;
@@ -75,9 +76,7 @@ class SimuladorCelular {
         this.loadEstado();
     }
 
-
     _bindEvents() {
-        // ... dentro de _bindEvents
         this.canvas.addEventListener("mousedown", e => {
             const [x, y] = this.getCanvasCoords(e.offsetX, e.offsetY);
             const clicked = this.celulas.find(c => Math.hypot(c.x - x, c.y - y) < 32);
@@ -85,8 +84,8 @@ class SimuladorCelular {
                 this.selectedCell = clicked;
                 this.isDraggingCell = true;
                 this.dragOffset = { dx: x - clicked.x, dy: y - clicked.y };
-                this.draw();
                 this.updateSidebar();
+                this.draw();
             } else {
                 this.isDraggingCanvas = true;
                 this.dragStart = { x: e.offsetX, y: e.offsetY };
@@ -107,7 +106,7 @@ class SimuladorCelular {
         });
         this.canvas.addEventListener("mouseup", e => {
             if (this.isDraggingCell && this.selectedCell) {
-                // Guarda nueva posición en backend si quieres
+                // Actualiza posición en backend
                 fetch("/mover_celula", {
                     method: "POST",
                     headers: {"Content-Type":"application/json"},
@@ -117,22 +116,8 @@ class SimuladorCelular {
             this.isDraggingCell = false;
             this.isDraggingCanvas = false;
         });
-        this.canvas.addEventListener("mousedown", e => {
-            this.dragging = true;
-            this.dragStart = { x: e.offsetX, y: e.offsetY };
-        });
 
-        this.canvas.addEventListener("mouseup", () => this.dragging = false);
-
-        this.canvas.addEventListener("mousemove", e => {
-            if (this.dragging) {
-                this.offsetX += (e.offsetX - this.dragStart.x) / this.scale;
-                this.offsetY += (e.offsetY - this.dragStart.y) / this.scale;
-                this.dragStart = { x: e.offsetX, y: e.offsetY };
-                this.draw();
-            }
-        });
-
+        // Zoom
         this.canvas.addEventListener("wheel", e => {
             e.preventDefault();
             const zoom = e.deltaY < 0 ? 1.1 : 0.9;
@@ -140,17 +125,23 @@ class SimuladorCelular {
             this.draw();
         }, { passive: false });
 
-        this.canvas.addEventListener("click", e => {
+        // Selección para enlazado manual
+        this.canvas.addEventListener("dblclick", e => {
             const [x, y] = this.getCanvasCoords(e.offsetX, e.offsetY);
-            const cel = this.celulas.find(c =>
-                Math.hypot(c.x - x, c.y - y) < 32
-            );
-            this.selectedCell = cel ?? null;
-            this.draw();
-            this.updateSidebar();
+            const cel = this.celulas.find(c => Math.hypot(c.x - x, c.y - y) < 32);
+            if (!cel) return;
+            if (this.celulaAEnlazar) {
+                if (this.celulaAEnlazar.id !== cel.id) {
+                    conectarCelulas(this.celulaAEnlazar.id, cel.id);
+                }
+                this.celulaAEnlazar = null;
+                this.draw();
+            } else {
+                this.celulaAEnlazar = cel;
+                this.draw();
+            }
         });
 
-        // Responsive canvas
         window.addEventListener("resize", () => this.resizeCanvas());
         this.resizeCanvas();
     }
@@ -184,9 +175,18 @@ class SimuladorCelular {
         for (const r of this.relaciones) r.draw(ctx, this.celulasMap);
 
         // Dibuja células
-        for (const c of this.celulas)
-            c.draw(ctx, this.selectedCell?.id === c.id);
-
+        for (const c of this.celulas) {
+            let sel = this.selectedCell?.id === c.id;
+            c.draw(ctx, sel);
+            // Marca visual de enlazado
+            if (this.celulaAEnlazar?.id === c.id) {
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 38, 0, 2 * Math.PI);
+                ctx.strokeStyle = "#ff0";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
@@ -194,7 +194,7 @@ class SimuladorCelular {
         fetch("/estado")
             .then(res => res.json())
             .then(data => {
-                // Crea relaciones desde enlaces
+                // Relaciona enlaces
                 const relaciones = [];
                 for (const c of data.celulas) {
                     if (c.enlaces?.length)
@@ -203,13 +203,16 @@ class SimuladorCelular {
                 }
                 this.setDatos({ celulas: data.celulas, relaciones });
                 this.updateStats();
+                this.updateSidebar();
             });
     }
 
     updateSidebar() {
-        const infoDiv = document.getElementById("infoCelula");
+        const infoDiv = document.getElementById("celulaDetalles");
         if (!this.selectedCell) {
             infoDiv.innerHTML = "<em>Selecciona una célula para ver detalles</em>";
+            document.getElementById("enlazarBtn").style.display = "none";
+            document.getElementById("editarBtn").style.display = "none";
             return;
         }
         const c = this.selectedCell;
@@ -221,8 +224,9 @@ class SimuladorCelular {
             <b>Nivel Evolución:</b> ${c.nivel_evolucion ?? "-"}<br>
             <b>Organulos:</b> ${c.organulos ? c.organulos.join(", ") : "-"}<br>
             <b>Enlaces:</b> ${c.enlaces ? c.enlaces.join(", ") : "-"}<br>
-            <button onclick="impulsarCelula('${c.id}')">Impulsar</button>
         `;
+        document.getElementById("enlazarBtn").style.display = "inline-block";
+        document.getElementById("editarBtn").style.display = "inline-block";
     }
 
     updateStats() {
@@ -232,10 +236,10 @@ class SimuladorCelular {
     }
 }
 
-// --- Inicialización ---
-const simulador = new SimuladorCelular(document.getElementById("energyCanvas"));
+const simulador = new SimuladorCelular(document.getElementById("canvas"));
 
-// Exponer funciones globales (para botones HTML)
+// Funciones globales
+
 window.evolucionar = function () {
     fetch("/evolucionar")
         .then(() => simulador.loadEstado());
@@ -254,104 +258,70 @@ window.impulsarCelula = function (id) {
     fetch("/impulsar/" + id).then(() => simulador.loadEstado());
 };
 
-// Para randomizar: implementa aquí tu lógica, llamando a una función en el backend
+// Conexión manual
+window.enlazarCelula = function () {
+    if (simulador.selectedCell) {
+        simulador.celulaAEnlazar = simulador.selectedCell;
+    }
+};
+
+function conectarCelulas(origen, destino) {
+    fetch("/api/conectar", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ origen, destino })
+    }).then(() => simulador.loadEstado());
+}
+
+// Edición modal
+window.editarCelula = function () {
+    if (!simulador.selectedCell) return;
+    mostrarCrudCelula(simulador.selectedCell, datos => {
+        fetch(`/api/celula/${simulador.selectedCell.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        }).then(() => simulador.loadEstado());
+    });
+};
+
+window.crearCelulaManual = function () {
+    mostrarCrudCelula({}, datos => {
+        fetch(`/api/celula`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        }).then(() => simulador.loadEstado());
+    });
+};
+
+function mostrarCrudCelula(data, onSave) {
+    const modal = document.getElementById("crudModal");
+    modal.style.display = "block";
+    document.getElementById("crudTitle").innerText = data.id ? "Editar célula" : "Nueva célula";
+    let form = document.getElementById("crudForm");
+    form.innerHTML = "";
+    // Edita todos los campos relevantes de la célula
+    let campos = ["tipo", "energia_actual", "energia_maxima", "estado", "nivel_evolucion"];
+    campos.forEach(k => {
+        form.innerHTML += `<label>${k}: <input name="${k}" value="${data[k] ?? ""}"></label><br>`;
+    });
+    form.onsubmit = e => {
+        e.preventDefault();
+        let out = {};
+        for (let inp of form.elements) if (inp.name) out[inp.name] = inp.value;
+        modal.style.display = "none";
+        onSave(out);
+    };
+}
+document.getElementById('closeCrud').onclick = () =>
+    document.getElementById('crudModal').style.display = 'none';
+
+// Random
 window.randomizarOrganismo = function () {
     fetch("/randomizar", { method: "POST" })
         .then(() => simulador.loadEstado());
 };
 
-// Llama a simulador.loadEstado() al cargar, ¡y todo estará enlazado!
-
-
-
-// Renderizado básico de tabla de células para frontend
-function renderTablaCelulas(celulas) {
-    const tbody = document.getElementById('tablaCelulas');
-    tbody.innerHTML = "";
-    celulas.forEach(cel => {
-        let tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${cel.id}</td>
-            <td>${cel.tipo}</td>
-            <td>${cel.energia_actual}</td>
-            <td>
-                <button onclick="mostrarDetallesCelula('${cel.id}')">Detalles</button>
-                <button onclick="editarCelulaModal('${cel.id}')">Editar</button>
-                <button onclick="eliminarCelula('${cel.id}')">Eliminar</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-
-// Utilidades para mostrar/hide modal
-function showCrudModal(title, entity, data={}, onSubmit) {
-  document.getElementById('crudModal').style.display = 'block';
-  document.getElementById('crudTitle').innerText = title;
-  let form = document.getElementById('crudForm');
-  form.innerHTML = ''; // Limpia
-  for (let key in data) {
-    if (key === "id") continue;
-    form.innerHTML += `<label>${key}: <input name="${key}" value="${data[key] ?? ""}"></label><br>`;
-  }
-  document.getElementById('crudSubmit').onclick = (e) => {
-    e.preventDefault();
-    let out = {};
-    Array.from(form.elements).forEach(inp => { if(inp.name) out[inp.name] = inp.value; });
-    onSubmit(out);
-    document.getElementById('crudModal').style.display = 'none';
-  };
-}
-document.getElementById('closeCrud').onclick = () => {
-  document.getElementById('crudModal').style.display = 'none';
-};
-
-// CRUD dinámico (tabla básica) para cada entidad
-function mostrarTablaCrud(entidad) {
-  fetch(`/api/${entidad}`).then(r=>r.json()).then(datos => {
-    let table = `<table><tr>`;
-    if (!Array.isArray(datos)) datos = datos[entidad] || [];
-    if (!datos.length) { document.getElementById('tablaCrudContainer').innerHTML = "Nada para mostrar"; return; }
-    Object.keys(datos[0]).forEach(k => table += `<th>${k}</th>`);
-    table += `<th>Acciones</th></tr>`;
-    datos.forEach(row => {
-      table += `<tr>`;
-      Object.values(row).forEach(v => table += `<td>${v}</td>`);
-      table += `<td>
-        <button onclick="editarEntidad('${entidad}', '${row.id}')">Editar</button>
-        <button onclick="eliminarEntidad('${entidad}', '${row.id}')">Borrar</button>
-      </td></tr>`;
-    });
-    table += `</table>
-    <button onclick="crearEntidad('${entidad}')">Nueva ${entidad.slice(0, -1)}</button>`;
-    document.getElementById('tablaCrudContainer').innerHTML = table;
-  });
-}
-
-// CRUD helpers
-function editarEntidad(entidad, id) {
-  fetch(`/api/${entidad}/${id}`).then(r=>r.json()).then(obj => {
-    showCrudModal("Editar " + entidad.slice(0,-1), entidad, obj, cambios => {
-      fetch(`/api/${entidad}/${id}`, {
-        method: "PATCH",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(cambios)
-      }).then(()=>mostrarTablaCrud(entidad));
-    });
-  });
-}
-function eliminarEntidad(entidad, id) {
-  if (confirm("¿Seguro?")) {
-    fetch(`/api/${entidad}/${id}`, {method:"DELETE"}).then(()=>mostrarTablaCrud(entidad));
-  }
-}
-function crearEntidad(entidad) {
-  showCrudModal("Nueva " + entidad.slice(0,-1), entidad, {nombre:""}, cambios => {
-    fetch(`/api/${entidad}`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(cambios)
-    }).then(()=>mostrarTablaCrud(entidad));
-  });
-}
+// --- Actualización automática inicial ---
+window.onload = () => simulador.loadEstado();

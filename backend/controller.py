@@ -1,4 +1,4 @@
-from db import celulas_table, organulos_table
+from db import celulas_table, organulos_table, generadores_table
 from logger import log_event
 from uuid import uuid4
 import random
@@ -87,6 +87,11 @@ def evolucionar(ciclos=1):
             rpm_simulada = 500  # Arranque virtual para la simulación
 
             orgs_celula = [o for o in organulos if o["celula_asociada"] == cel["id"]]
+            # -- Usar chequeo antes de activar/crear célula --
+            # ... dentro de la función evolucionar() o donde se activa una célula
+            if not puede_arrancar_celula(cel):
+                log_event("error", f"{cel['id']} no cumple condiciones de arranque", cel["id"])
+                continue
 
             for org in orgs_celula:
                 energia_extra += energia_generada_por(org, cel["energia_actual"], rpm_simulada)
@@ -187,14 +192,7 @@ def obtener_estado_red():
         "organulos": organulos
     }
 
-# Función para editar una célula (actualización flexible)
-def editar_celula(celula_id, cambios: dict):
-    celulas_table.update(cambios, lambda c: c["id"] == celula_id)
-    log_event("edicion", f"Célula {celula_id} editada: {cambios}", celula_id)
-    celulas_table.update(
-        lambda c: c["id"] == celula_id,
-        lambda c: c.setdefault("historial", []).append(f"Edición manual: {cambios}")
-    )
+
 
 # -----------------------------------------
 # Añadidos de funciones útiles y avanzadas
@@ -217,20 +215,6 @@ def instanciar_celula_tipo(tipo, posicion, madre=None, sufijo_id=None, estado="a
     log_event("instanciacion", f"Instanciada célula {celula_id} de tipo {tipo} en {posicion}", celula_id)
     return celula_id
 
-
-def eliminar_celula(celula_id):
-    """
-    Elimina una célula y sus organelos asociados de la red.
-    """
-    celula = celulas_table.get(lambda c: c["id"] == celula_id)
-    if not celula:
-        return False
-    # Elimina organulos asociados
-    organulos_table.delete(lambda o: o["celula_asociada"] == celula_id)
-    # Elimina célula
-    celulas_table.delete(lambda c: c["id"] == celula_id)
-    log_event("eliminacion", f"Célula {celula_id} y sus organulos eliminados", celula_id)
-    return True
 
 def conectar_celulas(origen_id, destino_id):
     """
@@ -433,29 +417,40 @@ def randomizar_organismo_param(params):
 
 
 # === FUNCIONES BÁSICAS PARA CRUD ===
-def crear_celula(data): celulas_table.insert(data)
 def editar_celula(id, cambios): celulas_table.update(cambios, lambda c: c["id"]==id)
 def eliminar_celula(id): celulas_table.remove(lambda c: c["id"]==id)
-def crear_organulo(data): organulos_table.insert(data)
-def editar_organulo(id, cambios): organulos_table.update(cambios, lambda o: o["id"]==id)
-def eliminar_organulo(id): organulos_table.remove(lambda o: o["id"]==id)
 def crear_generador(data): generadores_table.insert(data)
 def editar_generador(id, cambios): generadores_table.update(cambios, lambda g: g["id"]==id)
 def eliminar_generador(id): generadores_table.remove(lambda g: g["id"]==id)
-def crear_conexion(data): conexiones_table.insert(data)
-def editar_conexion(id, cambios): conexiones_table.update(cambios, lambda c: c["id"]==id)
-def eliminar_conexion(id): conexiones_table.remove(lambda c: c["id"]==id)
-
-
-# -- Lógica de requisitos de arranque para célula --
-def puede_arrancar_celula(celula):
-    organulos = [organulos_table.get(lambda o: o["id"]==oid) for oid in celula.get("organulos",[])]
-    tipos = [o["tipo"] for o in organulos if o]
-    if "O0" not in tipos and "O11" not in tipos:
+def editar_conexion(origen_id, destino_id, nueva_info):
+    """
+    Edita la información de la conexión entre dos células/orgánulos.
+    Si usas dicts, puedes almacenar info extra (peso, tipo, etc.).
+    """
+    celula = celulas_table.get(lambda c: c["id"] == origen_id)
+    if not celula:
         return False
-    return True
+    enlaces = celula.get("enlaces", [])
+    for enlace in enlaces:
+        # Si guardas solo el id, este bloque cambia.
+        if (isinstance(enlace, dict) and enlace.get("destino") == destino_id):
+            enlace.update(nueva_info)
+            celulas_table.update({"enlaces": enlaces}, lambda c: c["id"] == origen_id)
+            log_event("edicion", f"Conexión {origen_id}->{destino_id} editada: {nueva_info}", origen_id)
+            return True
+    return False
+
+def puede_arrancar_celula(celula):
+    # Ejemplo: requiere al menos un orgánulo solar (O11) o manual (O0)
+    organulos = celula.get("organulos", [])
+    if not organulos:
+        return False
+    # Si son IDs, deberías consultar en organulos_table, si ya son dict, mira el tipo:
+    for o in organulos:
+        tipo = o["tipo"] if isinstance(o, dict) else organulos_table.get(lambda x: x["id"] == o)["tipo"]
+        if tipo in ("O0", "O11"):
+            return True
+    return False
 
 
-# -- Usar chequeo antes de activar/crear célula --
-if not puede_arrancar_celula(celula):
-    return jsonify({"ok": False, "error": "La célula no cumple condiciones de arranque"}), 400
+
