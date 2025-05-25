@@ -18,8 +18,10 @@ tables = {
     "arranques": db.table('arranques'),
     "tipos": db.table('tipos'),
     "usuarios": db.table('usuarios'),
-    "conexiones": db.table('conexiones')   # <-- Esta es la forma correcta de definir la tabla conexiones
+    "conexiones": db.table('conexiones'),
+    "racks": db.table('racks')   # <--- ¡Añade esto!
 }
+
 
 # Alias rápidos
 celulas_table     = tables["celulas"]
@@ -33,6 +35,7 @@ arranques_table   = tables["arranques"]
 tipos_table       = tables["tipos"]
 usuarios_table    = tables["usuarios"]
 conexiones_table  = tables["conexiones"]
+racks_table = tables["racks"]
 
 # Queries reutilizables
 CelulaQuery      = Query()

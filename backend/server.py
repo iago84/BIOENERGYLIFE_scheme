@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
-from controller import cargar_inicial, evolucionar, impulsar_celula, randomizar_organismo_param, desconectar_celulas
+from controller import cargar_inicial, evolucionar, impulsar_celula, randomizar_organismo_param, desconectar_celulas, crear_celula
 from db import celulas_table, organulos_table, logs_table
 import os
 from controller import (
@@ -8,6 +8,8 @@ from controller import (
     eliminar_celula, conectar_celulas, evolucionar, clonar_celula,
     reiniciar_red
 )
+from parche_validaciones import crear_celula_validada
+
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 CORS(app)
 
@@ -22,12 +24,22 @@ from db import celulas_table, organulos_table, generadores_table
 def api_get_celulas():
     return jsonify(celulas_table.all())
 
+
 @app.route("/api/celulas", methods=["POST"])
 def api_post_celula():
     data = request.json
-    from controller import crear_celula
-    crear_celula(data)
-    return jsonify({"ok": True})
+    generadores = generadores_table.all()
+    celulas_existentes = celulas_table.all()
+    modo_balanceo = False  # o True, si quieres balancear en vez de bloquear
+    try:
+        ok, msg = crear_celula_validada(data, generadores, celulas_existentes, modo_balanceo=modo_balanceo)
+        if ok:
+            crear_celula(data)  # función original
+        return jsonify({"ok": ok, "mensaje": msg})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+
 
 @app.route("/api/celulas/<cid>", methods=["GET"])
 def api_get_celula(cid):
@@ -123,6 +135,35 @@ def api_delete_conexion(cid):
     from controller import eliminar_conexion
     eliminar_conexion(cid)
     return jsonify({"ok": True})
+
+
+
+from parche_validaciones import expandir_rack_validado
+from db import racks_table
+
+@app.route("/api/racks", methods=["POST"])
+def api_post_rack():
+    data = request.json
+    generadores = generadores_table.all()
+    celulas = celulas_table.all()
+    modo_balanceo = False  # o True
+    try:
+        ok, msg = expandir_rack_validado(data, generadores, celulas, modo_balanceo=modo_balanceo)
+        if ok:
+            racks_table.insert(data)
+        return jsonify({"ok": ok, "mensaje": msg})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+
+from parche_validaciones import validar_red_global
+
+@app.route("/api/red/validar", methods=["GET"])
+def api_validar_red():
+    generadores = generadores_table.all()
+    celulas = celulas_table.all()
+    ok, msg = validar_red_global(generadores, celulas, modo_balanceo=False)
+    return jsonify({"ok": ok, "mensaje": msg})
 
 @app.route('/')
 def index():

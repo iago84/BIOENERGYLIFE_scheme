@@ -5,6 +5,14 @@ import random
 from costs_and_requirements import celula_puede_evolucionar, COSTO_CREAR_CELULA
 from engine import energia_generada_por
 from populate_db import poblar_celulas_canvas, dict_plantillas, instanciar_celula_desde_plantilla
+from parche_realismo import (
+    calcular_consumo_total,
+    calcular_generacion_total,
+    validar_generador_vs_consumo,
+    balancear_rack,
+    corregir_superposiciones,
+    evolucionar_realista
+)
 
 plantilla_dict= dict_plantillas
 
@@ -72,6 +80,8 @@ def cargar_inicial():
     poblar_celulas_canvas()
     log_event("sistema", "Red energética inicial cargada", "sistema")
 
+
+
 def evolucionar(ciclos=1):
     resultados = []
     global celulas_activadas_recientemente
@@ -81,36 +91,42 @@ def evolucionar(ciclos=1):
         log_event("ciclo", f"== CICLO {ciclo + 1} ==", f"ciclo-{ciclo + 1}")
         celulas = celulas_table.all()
         organulos = organulos_table.all()
+        generadores = generadores_table.all()  # Añade esto si tienes generadores físicos
 
         for cel in celulas:
-            energia_extra = 0
-            rpm_simulada = 500  # Arranque virtual para la simulación
-
-            orgs_celula = [o for o in organulos if o["celula_asociada"] == cel["id"]]
-            # -- Usar chequeo antes de activar/crear célula --
-            # ... dentro de la función evolucionar() o donde se activa una célula
             if not puede_arrancar_celula(cel):
                 log_event("error", f"{cel['id']} no cumple condiciones de arranque", cel["id"])
                 continue
 
-            for org in orgs_celula:
-                energia_extra += energia_generada_por(org, cel["energia_actual"], rpm_simulada)
-
-            for o in orgs_celula:
-                if o["tipo"] == "O0" and o["id"] in impulsados:
-                    energia_extra += 5
-                    impulsados.discard(o["id"])
-                    break
+            # 1. Cálculo realista de consumo y generación
+            consumo = calcular_consumo_total(cel)  # Aquí puedes pasar acciones si lo deseas
+            generacion = calcular_generacion_total(cel, organulos, generadores)
 
             energia_actual = cel.get("energia_actual", 0)
             energia_maxima = cel.get("energia_maxima", 10)
-            nueva_energia = min(energia_actual + energia_extra, energia_maxima)
+            nueva_energia = max(0, min(energia_actual + generacion - consumo, energia_maxima))
             if "energia_actual" not in cel:
                 log_event("error", f"CELULA MAL FORMADA: {cel.get('id', '?')} sin energia_actual", cel.get("id"))
-            celulas_table.update({"energia_actual": nueva_energia}, lambda c: c["id"] == cel["id"])
-            log_event("energia", f"{cel['id']} generó {energia_extra:.2f} kW", cel["id"])
 
-            # Consumo mínimo por activación
+            celulas_table.update({"energia_actual": nueva_energia}, lambda c: c["id"] == cel["id"])
+            log_event(
+                "energia",
+                f"{cel['id']} generó {generacion:.2f} kW, consumió {consumo:.2f} kW",
+                cel["id"]
+            )
+
+            # 2. Validación: ¿el generador puede con la carga?
+            if "generadores" in cel:
+                for gid in cel["generadores"]:
+                    gen = next((g for g in generadores if g["id"] == gid), None)
+                    if gen:
+                        ok, total = validar_generador_vs_consumo(gen, [cel])
+                        if not ok:
+                            log_event("sobrecarga", f"Generador {gid} no puede con el consumo de {cel['id']} ({total:.2f} > {gen['potencia_kw']*gen.get('eficiencia',0.85):.2f})", cel["id"])
+                            resultados.append(f"{cel['id']} sin energía por sobrecarga de generador")
+                            continue
+
+            # 3. Activación y evolución si hay energía suficiente
             if nueva_energia >= 1:
                 nueva_energia -= 1
                 celulas_table.update({"energia_actual": nueva_energia}, lambda c: c["id"] == cel["id"])
@@ -121,7 +137,7 @@ def evolucionar(ciclos=1):
                 # Registro histórico
                 celulas_table.update(
                     lambda c: c["id"] == cel["id"],
-                    lambda c: c.setdefault("historial", []).append(f"Activación ciclo {ciclo+1}: {energia_extra:.2f} kW generados")
+                    lambda c: c.setdefault("historial", []).append(f"Activación ciclo {ciclo+1}: Gen {generacion:.2f} kW, Consumo {consumo:.2f} kW")
                 )
 
                 ciclos_previos = cel.get("ciclos_activada", 0) + 1
@@ -130,7 +146,6 @@ def evolucionar(ciclos=1):
                 # Evolución automática si cumple criterios
                 if ciclos_previos >= 3 and nueva_energia >= COSTO_CREAR_CELULA:
                     if celula_puede_evolucionar(cel, organulos):
-                        # Lógica para decidir tipo de célula hija (puedes mejorar la selección)
                         siguiente_tipo = random.choice(["G", "A", "D", "S"])
                         plantillas = plantilla_dict
                         plantilla = plantillas[siguiente_tipo]
@@ -151,7 +166,6 @@ def evolucionar(ciclos=1):
                             posibles_evoluciones=plantilla.get("posibles_evoluciones", []),
                         )
                         log_event("nacimiento", f"{nueva_id} generada por {cel['id']}", nueva_id)
-                        # Añade al historial de la célula madre
                         celulas_table.update(
                             lambda c: c["id"] == cel["id"],
                             lambda c: c.setdefault("historial", []).append(f"Generó célula hija {nueva_id} en ciclo {ciclo+1}")
@@ -439,6 +453,44 @@ def editar_conexion(origen_id, destino_id, nueva_info):
             log_event("edicion", f"Conexión {origen_id}->{destino_id} editada: {nueva_info}", origen_id)
             return True
     return False
+from parche_realismo import validar_generador_vs_consumo, balancear_rack
+
+def puede_crear_celula(nueva_celula, generadores, celulas_existentes):
+    """
+    Valida si la red soporta una nueva célula sin sobrecargar generadores o racks.
+    """
+    # 1. Si la célula va asociada a generador físico concreto
+    if "generadores" in nueva_celula:
+        for gid in nueva_celula["generadores"]:
+            gen = next((g for g in generadores if g["id"] == gid), None)
+            if gen:
+                # Obtén todas las células asociadas a este generador
+                cels_asociadas = [c for c in celulas_existentes if "generadores" in c and gid in c["generadores"]]
+                cels_asociadas.append(nueva_celula)
+                ok, total = validar_generador_vs_consumo(gen, cels_asociadas)
+                if not ok:
+                    return False, f"Generador {gid} sobrecargado ({total:.2f} kW > {gen['potencia_kw']*gen.get('eficiencia',0.85):.2f})"
+    # 2. Si modelo de racks: puedes ampliar aquí
+    # 3. O validación global si quieres impedir cualquier expansión que supere la potencia total de la red
+    return True, "OK"
+def crear_celula_validada(data):
+    generadores = generadores_table.all()
+    celulas_existentes = celulas_table.all()
+    ok, msg = puede_crear_celula(data, generadores, celulas_existentes)
+    if not ok:
+        log_event("expansion_bloqueada", msg, data.get("id","?"))
+        raise Exception(f"Creación de célula bloqueada: {msg}")
+    crear_celula(data)  # Si pasa el filtro, crea la célula
+def puede_expandir_rack(nuevo_rack, racks, generadores, celulas):
+    """
+    Valida si el rack tendrá suficiente potencia para todas las células asociadas.
+    """
+    gens = [g for g in generadores if g["id"] in nuevo_rack["generadores"]]
+    cels = [c for c in celulas if c["id"] in nuevo_rack["celulas"]]
+    ok, factor = balancear_rack(gens, cels)
+    if not ok:
+        return False, f"Rack {nuevo_rack['id']} sobrecargado (factor balanceo={factor:.2f})"
+    return True, "OK"
 
 def puede_arrancar_celula(celula):
     # Ejemplo: requiere al menos un orgánulo solar (O11) o manual (O0)
