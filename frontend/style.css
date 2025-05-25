@@ -149,3 +149,23 @@ button:hover { background: #0369a1; }
 #tablaCrudContainer table { width: 100%; border-collapse: collapse; margin-top: 1em; }
 #tablaCrudContainer th, #tablaCrudContainer td { border: 1px solid #555; padding: 0.5em; }
 #tablaCrudContainer tr.selected { background: #304080; color: #fff; }
+
+
+
+.context-menu {
+  background: #24292e;
+  color: #fff;
+  border-radius: 6px;
+  min-width: 150px;
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+}
+.context-menu li {
+  padding: 8px 18px;
+  cursor: pointer;
+}
+.context-menu li:hover {
+  background: #0366d6;
+}

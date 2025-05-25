@@ -28,22 +28,70 @@
             <h2>Organismo Orgánico ⚡️</h2>
             <button onclick="crearCelulaManual()">Nueva Célula</button>
             <button onclick="randomizarOrganismo()">Random Total</button>
-            <button onclick="toggleParametros()">Random Por Parámetros</button>
-            <div id="parametrosRandom" style="display:none;">
-                <!-- Añade aquí los inputs de random por parámetros si lo usas -->
-            </div>
+<button onclick="toggleParametros()">Random por Parámetros</button>
+<div id="parametrosRandom" style="display:none; margin-top:8px;">
+    <label>Tipos de célula:
+        <select id="randomTipos" multiple style="width:100%;">
+            <option value="G">Germinadora</option>
+            <option value="A">Amplificadora</option>
+            <option value="S">Estabilizadora</option>
+            <option value="D">Distribuidora</option>
+            <option value="Z">Latente</option>
+            <option value="C">Comunicadora</option>
+            <option value="CGX">Germinadora Extendida</option>
+            <option value="CEA">Amplificadora Evolutiva</option>
+            <option value="CST">Transmisora Sináptica</option>
+            <option value="CFB">Fusión Binaria</option>
+            <option value="CVP">Progenitora Variable</option>
+        </select>
+
+    </label>
+    <br>
+    <label>Cantidad:
+        <input type="number" id="randomCantidad" value="5" min="1" max="50" style="width:60px;">
+    </label>
+    <br>
+    <label>Energía mínima:
+        <input type="number" id="randomEnergiaMin" value="0.5" step="0.1" style="width:60px;">
+    </label>
+    <label>Energía máxima:
+        <input type="number" id="randomEnergiaMax" value="5" step="0.1" style="width:60px;">
+    </label>
+    <br>
+    <label>Área de dispersión:</label>
+    <input type="number" id="randomAreaAncho" value="800" style="width:60px;"> x
+    <input type="number" id="randomAreaAlto" value="600" style="width:60px;">
+    <br>
+    <button onclick="generarCelulasRandom()">Generar</button>
+</div>
+
+            <button onclick="resetView()">Reset Vista</button>
+
             <hr>
             <div id="infoCelula">
                 <h3>Info de Célula</h3>
                 <div id="celulaDetalles">Selecciona una célula</div>
-                <button id="enlazarBtn" onclick="enlazarCelula()" style="display:none;">Enlazar con otra</button>
+                <button id="btn-enlazar" class="btn btn-sm btn-link">Enlazar células</button>
                 <button id="editarBtn" onclick="editarCelula()" style="display:none;">Editar</button>
+                <button id="btn-add-organulo" class="btn btn-sm btn-secondary" disabled>Añadir orgánulo</button>
+
             </div>
             <div id="stats"></div>
             <hr>
+            <div id="logs-panel" style="height: 140px; overflow-y: auto; background:#10141a; margin-top:15px; font-size:13px;">
+              <!-- logs dinámicos -->
+            </div>
+
             <button onclick="evolucionar()">Evolucionar Ciclo</button>
             <button onclick="exportarJSON()">Exportar JSON</button>
             <hr>
+            <ul id="context-menu" class="context-menu" style="display:none;position:absolute;z-index:999;">
+              <li data-action="arrancar">Arrancar</li>
+              <li data-action="evolucionar">Evolucionar</li>
+              <li data-action="add-organulo">Añadir orgánulo</li>
+              <li data-action="eliminar">Eliminar célula</li>
+            </ul>
+
             <div id="tablasCrud">
                 <h3>Gestión de entidades</h3>
                 <ul>
@@ -55,6 +103,8 @@
                 <div id="tablaCrudContainer"></div>
             </div>
         </div>
+
+
         <canvas id="canvas" width="1400" height="900"></canvas>
     </div>
 

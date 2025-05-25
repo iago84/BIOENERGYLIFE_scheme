@@ -322,6 +322,265 @@ window.randomizarOrganismo = function () {
     fetch("/randomizar", { method: "POST" })
         .then(() => simulador.loadEstado());
 };
+let menuCellId = null;
+
+canvas.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    // Detecta célula bajo mouse
+    const celula = getCelulaFromCoords(e.offsetX, e.offsetY);
+    if (celula) {
+        menuCellId = celula.id;
+        const menu = document.getElementById("context-menu");
+        menu.style.display = 'block';
+        menu.style.left = e.pageX + "px";
+        menu.style.top = e.pageY + "px";
+    }
+});
+
+document.addEventListener('click', () => {
+    document.getElementById("context-menu").style.display = 'none';
+});
+
+document.getElementById("context-menu").addEventListener('click', function(e) {
+    if (e.target.tagName === "LI") {
+        const action = e.target.getAttribute('data-action');
+        handleContextMenuAction(action, menuCellId);
+        document.getElementById("context-menu").style.display = 'none';
+    }
+});
+
+
+function handleContextMenuAction(action, cellId) {
+    if (!cellId) return;
+    switch (action) {
+        case "arrancar": arrancarCelula(cellId); break;
+        case "evolucionar": evolucionarCelula(cellId); break;
+        case "add-organulo": abrirModalAddOrganulo(cellId); break;
+        case "eliminar": eliminarCelula(cellId); break;
+        // ...lo que necesites
+    }
+}
+let celulaOrigen = null, enlazando = false;
+document.getElementById("btn-enlazar").onclick = () => {
+    enlazando = true;
+    alert("Selecciona primero la célula origen y después la destino en el canvas.");
+};
+
+canvas.addEventListener("click", function(e) {
+    if (!enlazando) return;
+    const celula = getCelulaFromCoords(e.offsetX, e.offsetY);
+    if (celula && !celulaOrigen) {
+        celulaOrigen = celula.id;
+        // Resalta célula origen visualmente
+        resaltarCelula(celulaOrigen);
+        return;
+    }
+    if (celula && celulaOrigen) {
+        // Crear conexión
+        crearConexion(celulaOrigen, celula.id);
+        enlazando = false;
+        celulaOrigen = null;
+        limpiarResaltado();
+    }
+});
+let celulaSeleccionada = null;
+function seleccionarCelula(id) {
+    celulaSeleccionada = id;
+    document.getElementById("btn-add-organulo").disabled = !id;
+}
+
+document.getElementById("btn-add-organulo").onclick = function() {
+    if (!celulaSeleccionada) return;
+    abrirModalAddOrganulo(celulaSeleccionada);
+};
+function cargarLogs() {
+    fetch("/api/logs?limit=10")
+      .then(res => res.json())
+      .then(data => {
+          const logs = data.map(log => `<div><span style="color:#8aff8a;">${log.tipo}:</span> ${log.mensaje}</div>`);
+          document.getElementById("logs-panel").innerHTML = logs.join('');
+      });
+}
+setInterval(cargarLogs, 3000);
+
+
+let zoom = 1, panX = 0, panY = 0;
+let isDragging = false, dragStartX = 0, dragStartY = 0, lastPanX = 0, lastPanY = 0;
+canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    // Zoom centrado en el mouse (opcional, muy pro)
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left - panX) / zoom;
+    const my = (e.clientY - rect.top - panY) / zoom;
+    const oldZoom = zoom;
+
+    zoom += e.deltaY < 0 ? 0.1 : -0.1;
+    zoom = Math.max(0.2, Math.min(3, zoom)); // Puedes ajustar los límites
+
+    // Para que el zoom sea relativo al punto bajo el ratón:
+    panX -= (mx * (zoom - oldZoom));
+    panY -= (my * (zoom - oldZoom));
+
+    drawCanvas();
+}, { passive: false });
+
+
+canvas.addEventListener('mousedown', function(e) {
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    lastPanX = panX;
+    lastPanY = panY;
+});
+
+canvas.addEventListener('mousemove', function(e) {
+    if (isDragging) {
+        panX = lastPanX + (e.clientX - dragStartX);
+        panY = lastPanY + (e.clientY - dragStartY);
+        drawCanvas();
+    }
+});
+
+canvas.addEventListener('mouseup', function(e) {
+    isDragging = false;
+});
+canvas.addEventListener('mouseleave', function(e) {
+    isDragging = false;
+});
+
+function resetView() {
+    zoom = 1; panX = 0; panY = 0; drawCanvas();
+}
+
+
+// Arrays de ejemplo para la demo:
+const celulas = [
+    { id: "C1", x: 150, y: 180, tipo: "G", color: "#57e", radio: 28 },
+    { id: "C2", x: 340, y: 300, tipo: "A", color: "#3c8", radio: 30 }
+];
+
+const conexiones = [
+    { origen: "C1", destino: "C2", tipo: "energética" }
+];
+
+const organulos = [
+    { id: "O1", celula: "C1", dx: -15, dy: 15, color: "#f93", radio: 8 },
+    { id: "O2", celula: "C2", dx: 20, dy: -15, color: "#fc3", radio: 10 }
+];
+
+function drawCanvas() {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.setTransform(zoom, 0, 0, zoom, panX, panY);
+
+    drawAllConexiones();
+    drawAllCelulas();
+    drawOrganulos();
+
+    ctx.restore();
+}
+
+
+function drawAllConexiones() {
+    ctx.strokeStyle = "#999";
+    ctx.lineWidth = 3;
+    conexiones.forEach(conn => {
+        const c1 = celulas.find(c => c.id === conn.origen);
+        const c2 = celulas.find(c => c.id === conn.destino);
+        if (c1 && c2) {
+            ctx.beginPath();
+            ctx.moveTo(c1.x, c1.y);
+            ctx.lineTo(c2.x, c2.y);
+            ctx.stroke();
+        }
+    });
+}
+
+
+function drawAllCelulas() {
+    celulas.forEach(cel => {
+        // Dibuja círculo principal
+        ctx.beginPath();
+        ctx.arc(cel.x, cel.y, cel.radio, 0, 2 * Math.PI);
+        ctx.fillStyle = cel.color;
+        ctx.shadowColor = "#0008";
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Dibuja borde y texto (ID)
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#222";
+        ctx.stroke();
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 15px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(cel.id, cel.x, cel.y + 5);
+    });
+}
+
+
+function drawOrganulos() {
+    organulos.forEach(org => {
+        const cel = celulas.find(c => c.id === org.celula);
+        if (cel) {
+            ctx.beginPath();
+            ctx.arc(cel.x + org.dx, cel.y + org.dy, org.radio, 0, 2 * Math.PI);
+            ctx.fillStyle = org.color;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#444";
+            ctx.stroke();
+        }
+    });
+}
+
+
+function generarCelulasRandom() {
+    // Recoge los parámetros del formulario
+    const tipos = Array.from(document.getElementById("randomTipos").selectedOptions).map(opt => opt.value);
+    const cantidad = parseInt(document.getElementById("randomCantidad").value) || 1;
+    const energiaMin = parseFloat(document.getElementById("randomEnergiaMin").value) || 0.5;
+    const energiaMax = parseFloat(document.getElementById("randomEnergiaMax").value) || 5;
+    const areaAncho = parseInt(document.getElementById("randomAreaAncho").value) || 800;
+    const areaAlto = parseInt(document.getElementById("randomAreaAlto").value) || 600;
+
+    if (tipos.length === 0) {
+        alert("Selecciona al menos un tipo de célula");
+        return;
+    }
+
+    for (let i = 0; i < cantidad; i++) {
+        const tipo = tipos[Math.floor(Math.random() * tipos.length)];
+        const x = Math.floor(Math.random() * (areaAncho - 80)) + 40;
+        const y = Math.floor(Math.random() * (areaAlto - 80)) + 40;
+        const energia = +(Math.random() * (energiaMax - energiaMin) + energiaMin).toFixed(2);
+
+        // Aquí integra con tu función real de creación:
+        // Por ejemplo:
+        // instanciarCelulaDesdePlantilla(tipo, {x, y}, energia, ...);
+        // Aquí solo añade a tu array de demo:
+        celulas.push({
+            id: "C" + (celulas.length + 1),
+            x, y,
+            tipo,
+            color: "#"+Math.floor(Math.random()*16777215).toString(16),
+            radio: 25,
+            energia_actual: energia
+        });
+    }
+
+    drawCanvas();
+    toggleParametros();
+}
+function toggleParametros() {
+    const panel = document.getElementById("parametrosRandom");
+    panel.style.display = (panel.style.display === "none" ? "block" : "none");
+}
+
 
 // --- Actualización automática inicial ---
 window.onload = () => simulador.loadEstado();
