@@ -431,8 +431,7 @@ def randomizar_organismo_param(params):
 
 
 # === FUNCIONES BÁSICAS PARA CRUD ===
-def editar_celula(id, cambios): celulas_table.update(cambios, lambda c: c["id"]==id)
-def eliminar_celula(id): celulas_table.remove(lambda c: c["id"]==id)
+
 def crear_generador(data): generadores_table.insert(data)
 def editar_generador(id, cambios): generadores_table.update(cambios, lambda g: g["id"]==id)
 def eliminar_generador(id): generadores_table.remove(lambda g: g["id"]==id)

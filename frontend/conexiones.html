@@ -1,4 +1,51 @@
 <!DOCTYPE html>
-<html><head><meta charset='utf-8'><title>conexiones.html</title></head><body>
-<h2>conexiones</h2>
-</body></html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Gestión de Conexiones</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 2em; }
+        th, td { border: 1px solid #bbb; padding: 0.5em 1em; }
+        th { background: #f2f2f2; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        button { margin-right: 0.5em; }
+        #modalFondo { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4); z-index: 10; justify-content: center; align-items: center; }
+        #modal { background: white; padding: 2em; border-radius: 8px; min-width: 300px; }
+        #modal input { width: 90%; margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+    <h2>Gestión de Conexiones</h2>
+    <button onclick="abrirModalCrearConexion()">Nueva conexión</button>
+    <table id="tablaConexiones">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Tipo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyConexiones"></tbody>
+    </table>
+    <div id="modalFondo">
+        <div id="modal">
+            <h3 id="modalTitulo">Nueva conexión</h3>
+            <form onsubmit="guardarConexion(event)">
+                <input type="hidden" id="modalId" />
+                <label>ID: <input id="inputId" required /></label><br/>
+                <label>Origen: <input id="inputOrigen" required /></label><br/>
+                <label>Destino: <input id="inputDestino" required /></label><br/>
+                <label>Tipo: <input id="inputTipo" required /></label><br/>
+                <button type="submit">Guardar</button>
+                <button type="button" onclick="cerrarModalConexion()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <script src="crud_conexiones.js"></script>
+    <script>cargarConexiones();</script>
+</body>
+</html>

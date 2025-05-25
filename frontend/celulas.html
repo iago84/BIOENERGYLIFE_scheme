@@ -1,4 +1,71 @@
+<!--
+    Archivo: celulas.html
+    Descripción: Vista HTML para mostrar y gestionar células.
+    Utiliza crud_celulas.js para la lógica de negocio.
+-->
+
 <!DOCTYPE html>
-<html><head><meta charset='utf-8'><title>celulas.html</title></head><body>
-<h2>celulas</h2>
-</body></html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Gestión de Células</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 2em; }
+        th, td { border: 1px solid #bbb; padding: 0.5em 1em; }
+        th { background: #f2f2f2; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        button { margin-right: 0.5em; }
+        #modalFondo {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4); z-index: 10; justify-content: center; align-items: center;
+        }
+        #modal {
+            background: white; padding: 2em; border-radius: 8px; min-width: 300px;
+        }
+        #modal input { width: 90%; margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+    <h2>Gestión de Células</h2>
+    <button onclick="abrirModalCrear()">Nueva célula</button>
+    <table id="tablaCelulas">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Energía</th>
+                <th>Máx. Energía</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyCelulas">
+            <!-- Se llenará dinámicamente -->
+        </tbody>
+    </table>
+
+    <!-- Modal para crear/editar célula -->
+    <div id="modalFondo">
+        <div id="modal">
+            <h3 id="modalTitulo">Nueva célula</h3>
+            <form onsubmit="guardarCelula(event)">
+                <input type="hidden" id="modalId" />
+                <label>ID: <input id="inputId" required /></label><br/>
+                <label>Tipo: <input id="inputTipo" required /></label><br/>
+                <label>Energía: <input type="number" id="inputEnergia" required /></label><br/>
+                <label>Energía máxima: <input type="number" id="inputEnergiaMax" required /></label><br/>
+                <label>Estado: <input id="inputEstado" required /></label><br/>
+                <button type="submit">Guardar</button>
+                <button type="button" onclick="cerrarModal()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="crud_celulas.js"></script>
+    <script>
+        cargarCelulas();
+    </script>
+</body>
+</html>

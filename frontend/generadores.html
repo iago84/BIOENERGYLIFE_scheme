@@ -1,4 +1,53 @@
 <!DOCTYPE html>
-<html><head><meta charset='utf-8'><title>generadores.html</title></head><body>
-<h2>generadores</h2>
-</body></html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Gestión de Generadores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 2em; }
+        th, td { border: 1px solid #bbb; padding: 0.5em 1em; }
+        th { background: #f2f2f2; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        button { margin-right: 0.5em; }
+        #modalFondo { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4); z-index: 10; justify-content: center; align-items: center; }
+        #modal { background: white; padding: 2em; border-radius: 8px; min-width: 300px; }
+        #modal input { width: 90%; margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+    <h2>Gestión de Generadores</h2>
+    <button onclick="abrirModalCrearGenerador()">Nuevo generador</button>
+    <table id="tablaGeneradores">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Potencia (kW)</th>
+                <th>Eficiencia</th>
+                <th>Voltaje salida</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyGeneradores"></tbody>
+    </table>
+    <div id="modalFondo">
+        <div id="modal">
+            <h3 id="modalTitulo">Nuevo generador</h3>
+            <form onsubmit="guardarGenerador(event)">
+                <input type="hidden" id="modalId" />
+                <label>ID: <input id="inputId" required /></label><br/>
+                <label>Tipo: <input id="inputTipo" required /></label><br/>
+                <label>Potencia (kW): <input type="number" id="inputPotencia" step="any" required /></label><br/>
+                <label>Eficiencia: <input type="number" id="inputEficiencia" step="any" min="0" max="1" required /></label><br/>
+                <label>Voltaje salida: <input type="number" id="inputVoltaje" required /></label><br/>
+                <button type="submit">Guardar</button>
+                <button type="button" onclick="cerrarModalGenerador()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <script src="crud_generadores.js"></script>
+    <script>cargarGeneradores();</script>
+</body>
+</html>
