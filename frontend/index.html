@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diseñador de Organismo Energético</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Puedes mejorar con tu propio style.css, aquí básico para mostrar la idea */
+        body { margin: 0; background: #131b21; color: #f0f0f0; font-family: 'Segoe UI', 'Arial', sans-serif;}
+        #container { display: flex; height: 100vh;}
+        #sidebar { width: 360px; background: #17212b; padding: 1.5em 1em 1em 2em; box-shadow: 2px 0 16px #1118;}
+        #sidebar h2 { margin: 0 0 1em 0; color: #ffe466;}
+        #sidebar button { margin: 0.3em 0; background: #ffd900; border: none; padding: 0.6em 1em; border-radius: 1em; color: #000; font-weight: 600; cursor: pointer;}
+        #sidebar button:hover { background: #ffef80;}
+        #infoCelula {margin-top: 1em; background: #1d232a; border-radius: 1em; padding: 1em;}
+        #stats { margin-top: 2em; font-size: 1.1em; color: #ffe466;}
+        #energyCanvas { flex: 1; background: #0e161c; width: 100%; height: 100vh;}
+        #modalFondo { position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); display:none; z-index:99; align-items:center; justify-content:center;}
+        #modalCelula { background:#202c39; padding:2em; border-radius:1.5em; min-width:300px; box-shadow:0 4px 32px #000b; }
+        #modalCelula label { display:block; margin:0.6em 0 0.3em 0; color:#afe3ff;}
+        #modalCelula input, #modalCelula select { width:100%; padding:0.2em; border-radius:0.4em; border:1px solid #789;}
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h2>Organismo Orgánico ⚡️</h2>
+            <button onclick="abrirModalNuevaCelula()">Nueva Célula Manual</button>
+            <button onclick="randomizarOrganismo()">Random Total</button>
+            <button onclick="toggleParametros()">Random Por Parámetros</button>
+            <div id="parametrosRandom" style="display:none;">
+                <!-- ... (tus parámetros, igual que antes) ... -->
+            </div>
+            <hr>
+            <div id="infoCelula">
+                <h3>Info de Célula</h3>
+                <div id="celulaDetalles">Selecciona una célula</div>
+                <button id="enlazarBtn" onclick="prepararEnlaceCelula()" style="display:none;">Enlazar con otra</button>
+                <button id="editarBtn" onclick="abrirModalEditarCelula()" style="display:none;">Editar</button>
+            </div>
+            <div id="stats"></div>
+            <hr>
+            <button onclick="evolucionar()">Evolucionar Ciclo</button>
+            <button onclick="exportarJSON()">Exportar JSON</button>
+        </div>
+        <canvas id="energyCanvas" width="1400" height="900"></canvas>
+    </div>
+
+    <!-- MODAL: creación/edición de célula -->
+    <div id="modalFondo">
+        <div id="modalCelula">
+            <h3 id="modalTitulo">Nueva Célula</h3>
+            <form id="formCelula" autocomplete="off" onsubmit="return false;">
+                <label>Tipo:
+                    <select id="tipoCelula" required>
+                        <option value="G">Germinadora</option>
+                        <option value="A">Amplificadora</option>
+                        <option value="S">Estabilizadora</option>
+                        <option value="D">Distribuidora</option>
+                        <!-- añade más según amplíes -->
+                    </select>
+                </label>
+                <label>Energía inicial:
+                    <input type="number" id="energiaCelula" min="0" max="20" step="0.1" value="1">
+                </label>
+                <label>Organulos (IDs, separados por coma):
+                    <input type="text" id="organulosCelula" value="">
+                </label>
+                <label>¿Puede multiplicar?
+                    <select id="puedeMultiplicarCelula">
+                        <option value="true" selected>Sí</option>
+                        <option value="false">No</option>
+                    </select>
+                </label>
+                <label>Enlaces (IDs, separados por coma):
+                    <input type="text" id="enlacesCelula" value="">
+                </label>
+                <label>Posición X:
+                    <input type="number" id="xCelula" min="0" max="2000" value="400">
+                </label>
+                <label>Posición Y:
+                    <input type="number" id="yCelula" min="0" max="2000" value="200">
+                </label>
+                <div id="detallesArranque"></div>
+                <br>
+                <button type="button" onclick="guardarCelulaModal()">Guardar</button>
+                <button type="button" onclick="cerrarModalCelula()" style="background:#222; color:#fff;">Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        // Mostrar/ocultar parámetros random
+        function toggleParametros() {
+            const p = document.getElementById("parametrosRandom");
+            p.style.display = p.style.display === "none" ? "block" : "none";
+        }
+        // Modal lógica:
+        let modoEdicion = false, celulaEditando = null;
+
+        function abrirModalNuevaCelula() {
+            modoEdicion = false;
+            document.getElementById("modalTitulo").textContent = "Nueva Célula";
+            document.getElementById("formCelula").reset();
+            document.getElementById("modalFondo").style.display = "flex";
+        }
+        function abrirModalEditarCelula() {
+            modoEdicion = true;
+            const c = window.simulador.selectedCell;
+            if (!c) return;
+            document.getElementById("modalTitulo").textContent = "Editar Célula " + c.id;
+            document.getElementById("tipoCelula").value = c.tipo;
+            document.getElementById("energiaCelula").value = c.energia_actual;
+            document.getElementById("organulosCelula").value = c.organulos?.join(",") || "";
+            document.getElementById("puedeMultiplicarCelula").value = String(c.puede_multiplicar ?? true);
+            document.getElementById("enlacesCelula").value = c.enlaces?.join(",") || "";
+            document.getElementById("xCelula").value = c.x;
+            document.getElementById("yCelula").value = c.y;
+            celulaEditando = c.id;
+            document.getElementById("modalFondo").style.display = "flex";
+        }
+        function cerrarModalCelula() {
+            document.getElementById("modalFondo").style.display = "none";
+            celulaEditando = null;
+        }
+        function guardarCelulaModal() {
+            // Lee datos, comprueba lógica de arranque, etc.
+            const tipo = document.getElementById("tipoCelula").value;
+            const energia = +document.getElementById("energiaCelula").value;
+            const orgs = document.getElementById("organulosCelula").value.split(",").map(e => e.trim()).filter(Boolean);
+            const puedeMult = document.getElementById("puedeMultiplicarCelula").value === "true";
+            const enlaces = document.getElementById("enlacesCelula").value.split(",").map(e => e.trim()).filter(Boolean);
+            const x = +document.getElementById("xCelula").value, y = +document.getElementById("yCelula").value;
+            const payload = {
+                tipo, energia, organulos: orgs, puede_multiplicar: puedeMult,
+                enlaces, ubicacion: {x, y}, id: celulaEditando
+            };
+            // Aquí puedes añadir chequeos de requisitos dependientes del tipo (lógica avanzada a añadir)
+            if (modoEdicion) {
+                fetch("/editar_celula", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload) })
+                .then(() => { cerrarModalCelula(); window.simulador.loadEstado(); });
+            } else {
+                fetch("/crear_celula_manual", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload) })
+                .then(() => { cerrarModalCelula(); window.simulador.loadEstado(); });
+            }
+        }
+        // Para enlazar: lógica a implementar en JS y backend según tus reglas
+        function prepararEnlaceCelula() {
+            // Puedes activar modo de selección en canvas y permitir enlazar visualmente
+            alert("Función de enlace manual: selecciona la célula destino en el canvas (próxima versión).");
+        }
+    </script>
+
+<!-- CRUD Generadores -->
+<div id="crudGeneradores">
+  <h2>Generadores</h2>
+  <button onclick="nuevoGenerador()">Nuevo</button>
+  <table id="tablaGeneradores"></table>
+</div>
+<script src="crud_generadores.js"></script>
+
+
+<!-- CRUD Orgánulos -->
+<div id="crudOrganulos">
+  <h2>Orgánulos</h2>
+  <button onclick="nuevoOrganulo()">Nuevo</button>
+  <table id="tablaOrganulos"></table>
+</div>
+<script src="crud_organulos.js"></script>
+
+
+<!-- CRUD Células -->
+<div id="crudCelulas">
+  <h2>Células</h2>
+  <button onclick="nuevaCelula()">Nueva</button>
+  <table id="tablaCelulas"></table>
+</div>
+<script src="crud_celulas.js"></script>
+
+
+<!-- CRUD Conexiones -->
+<div id="crudConexiones">
+  <h2>Conexiones</h2>
+  <button onclick="nuevaConexion()">Nueva</button>
+  <table id="tablaConexiones"></table>
+</div>
+<script src="crud_conexiones.js"></script>
+
+
+<!-- Modal de edición/creación de célula -->
+<div id="modalCelula" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" onclick="cerrarModalCelula()">&times;</span>
+    <h2>Editar/Crear Célula</h2>
+    <form id="formCelula">
+      <label>ID: <input type="text" name="id" required></label>
+      <label>Tipo: <select name="tipo"><option>G</option><option>A</option><option>S</option><option>D</option></select></label>
+      <label>Energía actual: <input type="number" name="energia_actual" step="0.01" required></label>
+      <label>Máxima: <input type="number" name="energia_maxima" step="0.01" required></label>
+      <!-- ...otros campos... -->
+      <button type="submit">Guardar</button>
+    </form>
+  </div>
+</div>
+<!-- === CRUD UNIVERSAL MODAL Y TABLAS === -->
+<div id="crudModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span id="closeCrud" class="close">&times;</span>
+    <h2 id="crudTitle"></h2>
+    <form id="crudForm"></form>
+    <button type="submit" id="crudSubmit">Guardar</button>
+  </div>
+</div>
+
+<div id="tablasCrud">
+  <h3>Gestión de entidades</h3>
+  <ul>
+    <li><a href="#" onclick="mostrarTablaCrud('celulas')">Células</a></li>
+    <li><a href="#" onclick="mostrarTablaCrud('organulos')">Orgánulos</a></li>
+    <li><a href="#" onclick="mostrarTablaCrud('generadores')">Generadores</a></li>
+    <li><a href="#" onclick="mostrarTablaCrud('conexiones')">Conexiones</a></li>
+  </ul>
+  <div id="tablaCrudContainer"></div>
+</div>
+
+</body>
+</html>
