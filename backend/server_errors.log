@@ -40,3 +40,51 @@ INFO:werkzeug: * Detected change in 'E:\\Installed APPs\\python313\\Lib\\site-pa
 INFO:werkzeug: * Restarting with watchdog (windowsapi)
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 746-063-052
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with watchdog (windowsapi)
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 746-063-052
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:22] "GET / HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:22] "GET /style.css HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:22] "GET /app.js HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:23] "GET /estado HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:23] "GET /estado HTTP/1.1" 200 -
+INFO:werkzeug: * Detected change in 'E:\\Installed APPs\\python313\\Lib\\site-packages\\flask\\app.py', reloading
+INFO:werkzeug: * Detected change in 'E:\\Installed APPs\\python313\\Lib\\site-packages\\flask\\helpers.py', reloading
+INFO:werkzeug: * Detected change in 'E:\\Installed APPs\\python313\\Lib\\site-packages\\werkzeug\\utils.py', reloading
+ERROR:root:Traceback (most recent call last):
+  File "E:\Installed APPs\python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "E:\Installed APPs\python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "E:\Installed APPs\python313\Lib\site-packages\flask\app.py", line 278, in <lambda>
+    view_func=lambda **kw: self_ref().send_static_file(**kw),  # type: ignore # noqa: B950
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "E:\Installed APPs\python313\Lib\site-packages\flask\app.py", line 326, in send_static_file
+    return send_from_directory(
+        t.cast(str, self.static_folder), filename, max_age=max_age
+    )
+  File "E:\Installed APPs\python313\Lib\site-packages\flask\helpers.py", line 565, in send_from_directory
+    return werkzeug.utils.send_from_directory(  # type: ignore[return-value]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        directory, path, **_prepare_send_file_kwargs(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "E:\Installed APPs\python313\Lib\site-packages\werkzeug\utils.py", line 575, in send_from_directory
+    raise NotFound()
+werkzeug.exceptions.NotFound: 404 Not Found: The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
+
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:23] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 500 -
+INFO:werkzeug: * Restarting with watchdog (windowsapi)
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 746-063-052
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:31] "GET /evolucionar HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:31] "GET /estado HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:32] "GET /evolucionar HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:32] "GET /estado HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:33] "GET /evolucionar HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [25/May/2025 21:02:33] "GET /estado HTTP/1.1" 200 -

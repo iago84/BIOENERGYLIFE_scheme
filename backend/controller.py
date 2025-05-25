@@ -3,21 +3,212 @@ from logger import log_event
 from uuid import uuid4
 import random
 from costs_and_requirements import celula_puede_evolucionar, COSTO_CREAR_CELULA
-from engine import energia_generada_por
-from populate_db import poblar_celulas_canvas, dict_plantillas, instanciar_celula_desde_plantilla
 from parche_realismo import (
     calcular_consumo_total,
-    calcular_generacion_total,
-    validar_generador_vs_consumo,
-    balancear_rack,
-    corregir_superposiciones,
-    evolucionar_realista
+    calcular_generacion_total, validar_generador_vs_consumo, balancear_rack
 )
 
-plantilla_dict= dict_plantillas
 
 impulsados = set()
 celulas_activadas_recientemente = set()
+
+
+plantilla_dict = {
+    "G": {
+        "id": "C-G",
+        "tipo": "G",
+        "energia": 2.0,
+        "organulos": [
+            {"id": "O1-G-0", "tipo": "O1", "potencia": 0.2, "estado": "operativo"},
+            {"id": "O11-G-1", "tipo": "O11", "potencia": 0.2, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": True,
+        "consumo_kw": 0.1,
+        "produccion_kw": 0.2,
+        "energia_maxima": 5.0,
+        "historial": ["Célula germinadora creada y autoactivada."]
+    },
+    "A": {
+        "id": "C-A",
+        "tipo": "A",
+        "energia": 1.5,
+        "organulos": [
+            {"id": "O3-A-1", "tipo": "O3", "potencia": 0.5, "estado": "operativo"},
+            {"id": "O1-A-1", "tipo": "O1", "potencia": 0.1, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": True,
+        "consumo_kw": 0.15,
+        "produccion_kw": 0.5,
+        "energia_maxima": 3.0,
+        "historial": ["Célula amplificadora lista, orgánulo O3 encendido."]
+    },
+    "S": {
+        "id": "C-S",
+        "tipo": "S",
+        "energia": 0.4,
+        "organulos": [
+            {"id": "O2-S-1", "tipo": "O2", "potencia": 0.05, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": False,
+        "consumo_kw": 0.05,
+        "produccion_kw": 0.0,
+        "energia_maxima": 1.0,
+        "historial": ["Estabilizadora activa, equilibrando voltajes."]
+    },
+    "D": {
+        "id": "C-D",
+        "tipo": "D",
+        "energia": 0.6,
+        "organulos": [
+            {"id": "O5-D-1", "tipo": "O5", "potencia": 0.1, "estado": "operativo"},
+            {"id": "O1-D-1", "tipo": "O1", "potencia": 0.05, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": False,
+        "consumo_kw": 0.08,
+        "produccion_kw": 0.0,
+        "energia_maxima": 2.0,
+        "historial": ["Distribuidora lista para dividir energía."]
+    },
+    "Z": {
+        "id": "C-Z",
+        "tipo": "Z",
+        "energia": 0.1,
+        "organulos": [
+            {"id": "O8-Z-1", "tipo": "O8", "potencia": 0.05, "estado": "en_reserva"}
+        ],
+        "estado": "latente",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": False,
+        "consumo_kw": 0.01,
+        "produccion_kw": 0.05,
+        "energia_maxima": 0.5,
+        "historial": ["Latente: espera activación de emergencia."]
+    },
+    "C": {
+        "id": "C-C",
+        "tipo": "C",
+        "energia": 0.2,
+        "organulos": [
+            {"id": "O7-C-1", "tipo": "O7", "potencia": 0.02, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": False,
+        "consumo_kw": 0.02,
+        "produccion_kw": 0.0,
+        "energia_maxima": 1.0,
+        "historial": ["Comunicadora conectada a la red."]
+    },
+    "CGX": {
+        "id": "C-CGX",
+        "tipo": "CGX",
+        "energia": 2.2,
+        "organulos": [
+            {"id": "O1-CGX-0", "tipo": "O1", "potencia": 0.2, "estado": "operativo"},
+            {"id": "O11-CGX-1", "tipo": "O11", "potencia": 0.4, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": True,
+        "consumo_kw": 0.08,
+        "produccion_kw": 0.3,
+        "energia_maxima": 6.0,
+        "historial": ["Célula germinadora extendida auto-regenerativa."]
+    },
+    "CEA": {
+        "id": "C-CEA",
+        "tipo": "CEA",
+        "energia": 1.7,
+        "organulos": [
+            {"id": "O3-CEA-1", "tipo": "O3", "potencia": 0.7, "estado": "operativo"},
+            {"id": "O2-CEA-1", "tipo": "O2", "potencia": 0.2, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": True,
+        "consumo_kw": 0.12,
+        "produccion_kw": 0.7,
+        "energia_maxima": 3.5,
+        "historial": ["Célula amplificadora evolutiva lista."]
+    },
+    "CST": {
+        "id": "C-CST",
+        "tipo": "CST",
+        "energia": 0.3,
+        "organulos": [
+            {"id": "O9-CST-1", "tipo": "O9", "potencia": 0.03, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": False,
+        "consumo_kw": 0.04,
+        "produccion_kw": 0.0,
+        "energia_maxima": 0.8,
+        "historial": ["Transmisora sináptica conectada."]
+    },
+    "CFB": {
+        "id": "C-CFB",
+        "tipo": "CFB",
+        "energia": 0.8,
+        "organulos": [
+            {"id": "O6-CFB-1", "tipo": "O6", "potencia": 0.4, "estado": "operativo"},
+            {"id": "O6-CFB-2", "tipo": "O6", "potencia": 0.3, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": True,
+        "consumo_kw": 0.1,
+        "produccion_kw": 0.4,
+        "energia_maxima": 2.0,
+        "historial": ["Célula de fusión preparada para integrar energía."]
+    },
+    "CVP": {
+        "id": "C-CVP",
+        "tipo": "CVP",
+        "energia": 0.7,
+        "organulos": [
+            {"id": "O10-CVP-1", "tipo": "O10", "potencia": 0.15, "estado": "operativo"}
+        ],
+        "estado": "activa",
+        "generacion": 1,
+        "atributos": {},
+        "estable": True,
+        "productiva": True,
+        "consumo_kw": 0.05,
+        "produccion_kw": 0.15,
+        "energia_maxima": 1.5,
+        "historial": ["Progenitora variable: lista para adaptarse."]
+    }
+}
+
 # === FUNCIONES CRUD UNIVERSALES PARA CELULAS/ORGÁNULOS/GENS ===
 
 def crear_celula(data):
@@ -75,10 +266,10 @@ def eliminar_conexion(cid):
         )
 
 def cargar_inicial():
-    # Llama a tu nuevo populate, no al antiguo
-    from populate_db import poblar_celulas_canvas
-    poblar_celulas_canvas()
+    from populate_db import poblar_completo
+    poblar_completo()
     log_event("sistema", "Red energética inicial cargada", "sistema")
+
 
 
 
@@ -212,9 +403,8 @@ def obtener_estado_red():
 # Añadidos de funciones útiles y avanzadas
 # -----------------------------------------
 
-from populate_db import dict_plantillas  # O como lo llames
 
-def instanciar_celula_tipo(tipo, posicion, madre=None, sufijo_id=None, estado="activa"):
+def instanciar_celula_tipo(tipo, posicion, madre=None, sufijo_id=None, estado="activa", dict_plantillas=plantilla_dict):
     plantilla = dict_plantillas.get(tipo)
     if not plantilla:
         raise ValueError(f"Tipo de célula desconocido: {tipo}")
@@ -364,7 +554,56 @@ def desconectar_celulas(origen, destino):
 
 
 import math
-from populate_db import todas_plantillas, instanciar_celula_desde_plantilla
+def instanciar_celula_desde_plantilla(
+    plantilla,
+    posicion,             # Dict: {"x": int, "y": int}
+    madre=None,
+    sufijo_id=None,
+    estado="activa",
+    nivel_evolucion=1,
+    enlaces=None,
+    puede_multiplicar=True,
+    posibles_evoluciones=None
+):
+    import uuid
+    # Si la plantilla viene de un dict tipo plantilla_dict["G"], usa los campos correctamente
+    # Si viene como una lista, conviértelo en dict por tipo
+    if isinstance(plantilla, str):
+        plantilla = plantilla_dict[plantilla]
+
+    celula_id = plantilla["id"] + ("_" + sufijo_id if sufijo_id else "_" + str(uuid.uuid4())[:8])
+    # Clona organulos y actualiza los IDs (para unicidad)
+    organulos = []
+    organulo_ids = []
+    for o in plantilla["organulos"]:
+        oid = f"{celula_id}-{o['id']}"
+        organulos.append({**o, "id": oid, "celula_asociada": celula_id})
+        organulo_ids.append(oid)
+    organulos_table.insert_multiple(organulos)
+
+    celula_data = {
+        "id": celula_id,
+        "tipo": plantilla["tipo"],
+        "energia_actual": plantilla.get("energia", 0),
+        "energia_maxima": plantilla.get("energia_maxima", 10),
+        "organulos": organulo_ids,
+        "estado": estado,
+        "ubicacion": posicion,
+        "nivel_evolucion": nivel_evolucion,
+        "enlaces": enlaces or [],
+        "generada_por": madre,
+        "puede_multiplicar": puede_multiplicar,
+        "posibles_evoluciones": posibles_evoluciones or [],
+        "estable": plantilla.get("estable"),
+        "productiva": plantilla.get("productiva"),
+        "consumo_kw": plantilla.get("consumo_kw"),
+        "produccion_kw": plantilla.get("produccion_kw"),
+        "historial": list(plantilla.get("historial", [])),  # copia lista
+        "atributos": dict(plantilla.get("atributos", {})),
+        "generacion": plantilla.get("generacion", 1)
+    }
+    celulas_table.insert(celula_data)
+    return celula_id, organulo_ids
 
 def randomizar_organismo_param(params):
     # Limpiar la red primero
@@ -393,7 +632,7 @@ def randomizar_organismo_param(params):
     posiciones = []
     ancho, alto = 1000, 800
     for i, t in enumerate(tipos):
-        plantilla = next((p for p in todas_plantillas if p["tipo"] == t), todas_plantillas[0])
+        plantilla = next((p for p in plantilla_dict if p["tipo"] == t), plantilla_dict[0])
         x = random.randint(80, ancho - 80)
         y = random.randint(80, alto - 80)
         energia = round(random.uniform(energia_min, energia_max), 2)
@@ -425,11 +664,6 @@ def randomizar_organismo_param(params):
     return {"n_celulas": num_celulas, "tipos": tipos, "ids": ids_celulas}
 
 
-# En controller.py
-
-
-
-
 # === FUNCIONES BÁSICAS PARA CRUD ===
 
 def crear_generador(data): generadores_table.insert(data)
@@ -452,7 +686,6 @@ def editar_conexion(origen_id, destino_id, nueva_info):
             log_event("edicion", f"Conexión {origen_id}->{destino_id} editada: {nueva_info}", origen_id)
             return True
     return False
-from parche_realismo import validar_generador_vs_consumo, balancear_rack
 
 def puede_crear_celula(nueva_celula, generadores, celulas_existentes):
     """

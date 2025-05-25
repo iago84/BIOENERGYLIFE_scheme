@@ -1,0 +1,938 @@
+{
+  "generadores": {
+    "1": {
+      "id": "G-M100",
+      "nombre": "Micro Generador Manual",
+      "tipo": "iman_fijo",
+      "potencia_kw": 0.1,
+      "rpm_min": 60,
+      "voltaje_salida_v": 12,
+      "eficiencia": 0.75,
+      "aplicacion": "O1",
+      "arranques": [
+        {
+          "tipo": "manual",
+          "descripcion": "Manivela o pedal",
+          "costo_kw": 0.05
+        }
+      ],
+      "notas": "Ideal para pruebas r\u00e1pidas o backup local."
+    },
+    "2": {
+      "id": "G-I1K",
+      "nombre": "Generador Inducci\u00f3n 1kW",
+      "tipo": "induccion",
+      "potencia_kw": 1.0,
+      "rpm_min": 250,
+      "voltaje_salida_v": 48,
+      "eficiencia": 0.88,
+      "aplicacion": "O3",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Impulso con motor 220V",
+          "costo_kw": 0.2
+        }
+      ],
+      "notas": "Requiere arranque externo inicial."
+    },
+    "3": {
+      "id": "G-I5K",
+      "nombre": "Generador Inducci\u00f3n 5kW",
+      "tipo": "induccion",
+      "potencia_kw": 5.0,
+      "rpm_min": 500,
+      "voltaje_salida_v": 220,
+      "eficiencia": 0.91,
+      "aplicacion": "O4",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Arranque motor o red",
+          "costo_kw": 1.0
+        }
+      ],
+      "notas": "Potencia industrial. Arranque costoso."
+    },
+    "4": {
+      "id": "G-S500",
+      "nombre": "Generador Solar 0.5kW",
+      "tipo": "solar",
+      "potencia_kw": 0.5,
+      "rpm_min": 0,
+      "voltaje_salida_v": 24,
+      "eficiencia": 0.8,
+      "aplicacion": "O1",
+      "arranques": [
+        {
+          "tipo": "luz_solar",
+          "descripcion": "Irradiancia m\u00ednima 300W/m2",
+          "costo_kw": 0
+        }
+      ],
+      "notas": "No requiere arranque, energ\u00eda directa con luz solar."
+    },
+    "5": {
+      "id": "G-H2K",
+      "nombre": "Generador Hidr\u00e1ulico 2kW",
+      "tipo": "hidraulico",
+      "potencia_kw": 2.0,
+      "rpm_min": 300,
+      "voltaje_salida_v": 120,
+      "eficiencia": 0.92,
+      "aplicacion": "O2",
+      "arranques": [
+        {
+          "tipo": "flujo_agua",
+          "descripcion": "Impulso hidr\u00e1ulico continuo",
+          "costo_kw": 0.2
+        }
+      ],
+      "notas": "Requiere caudal de agua estable."
+    },
+    "6": {
+      "id": "G-M50",
+      "nombre": "Micro Generador Manual Compacto",
+      "tipo": "iman_fijo",
+      "potencia_kw": 0.05,
+      "rpm_min": 50,
+      "voltaje_salida_v": 6,
+      "eficiencia": 0.65,
+      "aplicacion": "O1",
+      "arranques": [
+        {
+          "tipo": "manual",
+          "descripcion": "Manivela directa",
+          "costo_kw": 0.02
+        }
+      ],
+      "notas": "Baja potencia para emergencias o sensores."
+    },
+    "7": {
+      "id": "G-M200",
+      "nombre": "Generador Manual Alta Resistencia",
+      "tipo": "iman_fijo",
+      "potencia_kw": 0.2,
+      "rpm_min": 70,
+      "voltaje_salida_v": 24,
+      "eficiencia": 0.72,
+      "aplicacion": "O2",
+      "arranques": [
+        {
+          "tipo": "manual",
+          "descripcion": "Palanca reforzada",
+          "costo_kw": 0.08
+        }
+      ],
+      "notas": "Utilizado en kits port\u00e1tiles de emergencia."
+    },
+    "8": {
+      "id": "G-F1K",
+      "nombre": "Generador Im\u00e1n Fijo 1kW",
+      "tipo": "iman_fijo",
+      "potencia_kw": 1.0,
+      "rpm_min": 150,
+      "voltaje_salida_v": 48,
+      "eficiencia": 0.83,
+      "aplicacion": "O2",
+      "arranques": [
+        {
+          "tipo": "manual",
+          "descripcion": "Pedal motorizado inicial",
+          "costo_kw": 0.15
+        },
+        {
+          "tipo": "motor_aux",
+          "descripcion": "Motor DC 12V",
+          "costo_kw": 0.05
+        }
+      ],
+      "notas": "Ideal para backups rurales y arranque h\u00edbrido."
+    },
+    "9": {
+      "id": "G-F2K",
+      "nombre": "Generador Im\u00e1n Fijo 2kW",
+      "tipo": "iman_fijo",
+      "potencia_kw": 2.0,
+      "rpm_min": 200,
+      "voltaje_salida_v": 110,
+      "eficiencia": 0.85,
+      "aplicacion": "O3",
+      "arranques": [
+        {
+          "tipo": "manual",
+          "descripcion": "Manivela larga",
+          "costo_kw": 0.25
+        },
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Impulso inicial 220V",
+          "costo_kw": 0.1
+        }
+      ],
+      "notas": "Para peque\u00f1os talleres o n\u00facleos familiares."
+    },
+    "10": {
+      "id": "G-F5K",
+      "nombre": "Generador Im\u00e1n Fijo 5kW",
+      "tipo": "iman_fijo",
+      "potencia_kw": 5.0,
+      "rpm_min": 350,
+      "voltaje_salida_v": 220,
+      "eficiencia": 0.88,
+      "aplicacion": "O3",
+      "arranques": [
+        {
+          "tipo": "motor_aux",
+          "descripcion": "Motor AC 220V",
+          "costo_kw": 0.5
+        }
+      ],
+      "notas": "Capacidad industrial b\u00e1sica, autoexcitable."
+    },
+    "11": {
+      "id": "G-F10K",
+      "nombre": "Generador Im\u00e1n Fijo 10kW Trif\u00e1sico",
+      "tipo": "iman_fijo",
+      "potencia_kw": 10.0,
+      "rpm_min": 400,
+      "voltaje_salida_v": 400,
+      "eficiencia": 0.92,
+      "aplicacion": "O4",
+      "arranques": [
+        {
+          "tipo": "motor_aux",
+          "descripcion": "Motor trif\u00e1sico externo",
+          "costo_kw": 1.5
+        }
+      ],
+      "notas": "Para racks modulares, alta estabilidad."
+    },
+    "12": {
+      "id": "G-F25K",
+      "nombre": "Super Generador Im\u00e1n Fijo 25kW",
+      "tipo": "iman_fijo",
+      "potencia_kw": 25.0,
+      "rpm_min": 600,
+      "voltaje_salida_v": 690,
+      "eficiencia": 0.94,
+      "aplicacion": "O5",
+      "arranques": [
+        {
+          "tipo": "motor_aux",
+          "descripcion": "Impulso de generador paralelo",
+          "costo_kw": 2.5
+        }
+      ],
+      "notas": "Para conexiones industriales de alto rendimiento."
+    },
+    "13": {
+      "id": "G-T1K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 1kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 1.0,
+      "rpm_min": 180,
+      "voltaje_salida_v": 48,
+      "eficiencia": 0.8,
+      "aplicacion": "O2",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Impulso motor monof\u00e1sico",
+          "costo_kw": 0.25
+        }
+      ],
+      "notas": "Ideal para pruebas y peque\u00f1os motores trif\u00e1sicos."
+    },
+    "14": {
+      "id": "G-T2K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 2kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 2.0,
+      "rpm_min": 200,
+      "voltaje_salida_v": 110,
+      "eficiencia": 0.82,
+      "aplicacion": "O2",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Impulso motor AC 220V",
+          "costo_kw": 0.35
+        }
+      ],
+      "notas": "Rack modular, alimentaci\u00f3n de bombas o maquinaria."
+    },
+    "15": {
+      "id": "G-T5K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 5kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 5.0,
+      "rpm_min": 350,
+      "voltaje_salida_v": 220,
+      "eficiencia": 0.87,
+      "aplicacion": "O3",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Motor trif\u00e1sico o estrella-delta",
+          "costo_kw": 0.7
+        }
+      ],
+      "notas": "Rack industrial peque\u00f1o, talleres, backup cr\u00edtico."
+    },
+    "16": {
+      "id": "G-T10K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 10kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 10.0,
+      "rpm_min": 450,
+      "voltaje_salida_v": 400,
+      "eficiencia": 0.9,
+      "aplicacion": "O4",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Arranque directo o soft-starter",
+          "costo_kw": 1.2
+        }
+      ],
+      "notas": "Para paneles de control, racks de mediana escala."
+    },
+    "17": {
+      "id": "G-T25K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 25kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 25.0,
+      "rpm_min": 650,
+      "voltaje_salida_v": 690,
+      "eficiencia": 0.93,
+      "aplicacion": "O5",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Arranque con variador de frecuencia",
+          "costo_kw": 3.0
+        }
+      ],
+      "notas": "Grandes sistemas, nodos de interconexi\u00f3n masiva."
+    },
+    "18": {
+      "id": "G-T50K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 50kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 50.0,
+      "rpm_min": 900,
+      "voltaje_salida_v": 1000,
+      "eficiencia": 0.95,
+      "aplicacion": "O6",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Arranque programado en red",
+          "costo_kw": 6.0
+        }
+      ],
+      "notas": "Mega racks, plantas industriales, redes distribuidas."
+    },
+    "19": {
+      "id": "G-T100K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 100kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 100.0,
+      "rpm_min": 1000,
+      "voltaje_salida_v": 1000,
+      "eficiencia": 0.96,
+      "aplicacion": "O7",
+      "arranques": [
+        {
+          "tipo": "corriente_externa",
+          "descripcion": "Variador de frecuencia industrial",
+          "costo_kw": 12.0
+        }
+      ],
+      "notas": "Industria pesada, backup hospitalario, mega-racks."
+    },
+    "20": {
+      "id": "G-T250K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 250kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 250.0,
+      "rpm_min": 1200,
+      "voltaje_salida_v": 3000,
+      "eficiencia": 0.97,
+      "aplicacion": "O7",
+      "arranques": [
+        {
+          "tipo": "soft_starter",
+          "descripcion": "Soft-Starter industrial PLC",
+          "costo_kw": 25.0
+        }
+      ],
+      "notas": "Grandes industrias, suministros cr\u00edticos, aeropuertos."
+    },
+    "21": {
+      "id": "G-T500K",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 500kW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 500.0,
+      "rpm_min": 1400,
+      "voltaje_salida_v": 6600,
+      "eficiencia": 0.98,
+      "aplicacion": "O8",
+      "arranques": [
+        {
+          "tipo": "arranque_secundario",
+          "descripcion": "Arranque en dos etapas, sincronizado",
+          "costo_kw": 45.0
+        }
+      ],
+      "notas": "Sistemas de cogeneraci\u00f3n, plantas industriales mayores."
+    },
+    "22": {
+      "id": "G-T1MW",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 1MW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 1000.0,
+      "rpm_min": 1500,
+      "voltaje_salida_v": 11000,
+      "eficiencia": 0.985,
+      "aplicacion": "O9",
+      "arranques": [
+        {
+          "tipo": "sistema_sincronizado",
+          "descripcion": "Sincronizaci\u00f3n de red, arranque programado",
+          "costo_kw": 90.0
+        }
+      ],
+      "notas": "Redes el\u00e9ctricas, subestaciones, emergencias urbanas."
+    },
+    "23": {
+      "id": "G-T2MW",
+      "nombre": "Generador Trif\u00e1sico Inducci\u00f3n 2MW",
+      "tipo": "induccion_trifasico",
+      "potencia_kw": 2000.0,
+      "rpm_min": 1500,
+      "voltaje_salida_v": 15000,
+      "eficiencia": 0.988,
+      "aplicacion": "O10",
+      "arranques": [
+        {
+          "tipo": "sistema_sincronizado",
+          "descripcion": "Automatizado con redundancia",
+          "costo_kw": 180.0
+        }
+      ],
+      "notas": "Mega plantas, centrales distribuidas, grandes industrias."
+    },
+    "24": {
+      "id": "G-F500K",
+      "nombre": "Generador Im\u00e1n Fijo 500kW",
+      "tipo": "iman_fijo",
+      "potencia_kw": 500.0,
+      "rpm_min": 1200,
+      "voltaje_salida_v": 11000,
+      "eficiencia": 0.985,
+      "aplicacion": "O8",
+      "arranques": [
+        {
+          "tipo": "motor_aux",
+          "descripcion": "Arranque asistido con generador auxiliar",
+          "costo_kw": 50.0
+        }
+      ],
+      "notas": "Para industrias verdes y generaci\u00f3n renovable en granja."
+    },
+    "25": {
+      "id": "G-F1MW",
+      "nombre": "Super Generador Im\u00e1n Fijo 1MW",
+      "tipo": "iman_fijo",
+      "potencia_kw": 1000.0,
+      "rpm_min": 1200,
+      "voltaje_salida_v": 15000,
+      "eficiencia": 0.99,
+      "aplicacion": "O10",
+      "arranques": [
+        {
+          "tipo": "arranque_automatizado",
+          "descripcion": "Secuencia autom\u00e1tica de alta potencia",
+          "costo_kw": 120.0
+        }
+      ],
+      "notas": "Para interconexi\u00f3n de parques energ\u00e9ticos renovables."
+    },
+    "26": {
+      "id": "G-F2MW",
+      "nombre": "Ultra Generador Im\u00e1n Fijo 2MW",
+      "tipo": "iman_fijo",
+      "potencia_kw": 2000.0,
+      "rpm_min": 1500,
+      "voltaje_salida_v": 20000,
+      "eficiencia": 0.992,
+      "aplicacion": "O11",
+      "arranques": [
+        {
+          "tipo": "arranque_dual",
+          "descripcion": "Dual start: doble generador de arranque",
+          "costo_kw": 210.0
+        }
+      ],
+      "notas": "Para futuras ciudades inteligentes, hubs industriales."
+    }
+  },
+  "config": {
+    "1": {
+      "clave": "velocidad_simulacion",
+      "valor": 1.0
+    },
+    "2": {
+      "clave": "energia_inicial",
+      "valor": 10
+    },
+    "3": {
+      "clave": "ciclos_maximos",
+      "valor": 1000
+    }
+  },
+  "celulas": {
+    "1": {
+      "id": "C-G",
+      "tipo": "G",
+      "energia": 2.0,
+      "organulos": [
+        {
+          "id": "O1-G-0",
+          "tipo": "O1",
+          "potencia": 0.2,
+          "estado": "operativo"
+        },
+        {
+          "id": "O11-G-1",
+          "tipo": "O11",
+          "potencia": 0.2,
+          "estado": "operativo"
+        }
+      ],
+      "estado": "activa",
+      "generacion": 1,
+      "atributos": {},
+      "estable": true,
+      "productiva": true,
+      "consumo_kw": 0.1,
+      "produccion_kw": 0.2,
+      "energia_maxima": 5.0,
+      "historial": [
+        "C\u00e9lula germinadora creada y autoactivada."
+      ]
+    },
+    "2": {
+      "id": "C-CEA",
+      "tipo": "CEA",
+      "energia": 1.7,
+      "organulos": [
+        {
+          "id": "O3-CEA-1",
+          "tipo": "O3",
+          "potencia": 0.7,
+          "estado": "operativo"
+        },
+        {
+          "id": "O2-CEA-1",
+          "tipo": "O2",
+          "potencia": 0.2,
+          "estado": "operativo"
+        }
+      ],
+      "estado": "activa",
+      "generacion": 1,
+      "atributos": {},
+      "estable": true,
+      "productiva": true,
+      "consumo_kw": 0.12,
+      "produccion_kw": 0.7,
+      "energia_maxima": 3.5,
+      "historial": [
+        "C\u00e9lula amplificadora evolutiva lista."
+      ]
+    },
+    "3": {
+      "id": "C-S",
+      "tipo": "S",
+      "energia": 0.4,
+      "organulos": [
+        {
+          "id": "O2-S-1",
+          "tipo": "O2",
+          "potencia": 0.05,
+          "estado": "operativo"
+        }
+      ],
+      "estado": "activa",
+      "generacion": 1,
+      "atributos": {},
+      "estable": true,
+      "productiva": false,
+      "consumo_kw": 0.05,
+      "produccion_kw": 0.0,
+      "energia_maxima": 1.0,
+      "historial": [
+        "Estabilizadora activa, equilibrando voltajes."
+      ]
+    }
+  },
+  "organulos": {
+    "1": {
+      "id": "O1-0",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "operativo",
+      "celula_asociada": "C1",
+      "activa_a": [
+        "O1-1",
+        "O1-2",
+        "O1-3",
+        "O1-4",
+        "O1-5",
+        "O1-6",
+        "O1-7",
+        "O1-8",
+        "O1-9",
+        "O1-10"
+      ],
+      "depende_de": [],
+      "secuenciador": true
+    },
+    "2": {
+      "id": "O1-1",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "3": {
+      "id": "O1-2",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "4": {
+      "id": "O1-3",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "5": {
+      "id": "O1-4",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "6": {
+      "id": "O1-5",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "7": {
+      "id": "O1-6",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "8": {
+      "id": "O1-7",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "9": {
+      "id": "O1-8",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "10": {
+      "id": "O1-9",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "11": {
+      "id": "O1-10",
+      "tipo": "O1",
+      "potencia": 0.1,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O1-0"
+      ],
+      "secuenciador": false
+    },
+    "12": {
+      "id": "O3-1",
+      "tipo": "O3",
+      "potencia": 1.0,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [
+        "O4-1"
+      ],
+      "depende_de": [
+        "O1-1",
+        "O1-2"
+      ],
+      "secuenciador": false
+    },
+    "13": {
+      "id": "O3-2",
+      "tipo": "O3",
+      "potencia": 1.0,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [
+        "O4-1"
+      ],
+      "depende_de": [
+        "O1-3",
+        "O1-4"
+      ],
+      "secuenciador": false
+    },
+    "14": {
+      "id": "O3-3",
+      "tipo": "O3",
+      "potencia": 1.0,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [
+        "O4-1"
+      ],
+      "depende_de": [
+        "O1-5",
+        "O1-6"
+      ],
+      "secuenciador": false
+    },
+    "15": {
+      "id": "O3-4",
+      "tipo": "O3",
+      "potencia": 1.0,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [
+        "O4-1"
+      ],
+      "depende_de": [
+        "O1-7",
+        "O1-8"
+      ],
+      "secuenciador": false
+    },
+    "16": {
+      "id": "O3-5",
+      "tipo": "O3",
+      "potencia": 1.0,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [
+        "O4-1"
+      ],
+      "depende_de": [
+        "O1-9",
+        "O1-10"
+      ],
+      "secuenciador": false
+    },
+    "17": {
+      "id": "O4-1",
+      "tipo": "O4",
+      "potencia": 5.0,
+      "estado": "espera",
+      "celula_asociada": "C1",
+      "activa_a": [],
+      "depende_de": [
+        "O3-1",
+        "O3-2",
+        "O3-3",
+        "O3-4",
+        "O3-5"
+      ],
+      "secuenciador": false
+    }
+  },
+  "tejidos": {
+    "1": {
+      "id": "TEJ1",
+      "nombre": "Tejido demo",
+      "celulas": [
+        "C-G",
+        "C-CEA"
+      ],
+      "descripcion": "Tejido inicial",
+      "estado": "activo"
+    }
+  },
+  "organos": {},
+  "tipos": {
+    "1": {
+      "clase": "celula",
+      "codigo": "G",
+      "nombre": "Germinadora"
+    },
+    "2": {
+      "clase": "celula",
+      "codigo": "A",
+      "nombre": "Amplificadora"
+    },
+    "3": {
+      "clase": "celula",
+      "codigo": "S",
+      "nombre": "Estabilizadora"
+    },
+    "4": {
+      "clase": "celula",
+      "codigo": "D",
+      "nombre": "Distribuidora"
+    },
+    "5": {
+      "clase": "celula",
+      "codigo": "Z",
+      "nombre": "Latente"
+    },
+    "6": {
+      "clase": "celula",
+      "codigo": "C",
+      "nombre": "Comunicadora"
+    },
+    "7": {
+      "clase": "celula",
+      "codigo": "CGX",
+      "nombre": "Germinadora Extendida"
+    },
+    "8": {
+      "clase": "celula",
+      "codigo": "CEA",
+      "nombre": "Amplificadora Evolutiva"
+    },
+    "9": {
+      "clase": "celula",
+      "codigo": "CST",
+      "nombre": "Transmisora Sin\u00e1ptica"
+    },
+    "10": {
+      "clase": "celula",
+      "codigo": "CFB",
+      "nombre": "Fusi\u00f3n Binaria"
+    },
+    "11": {
+      "clase": "celula",
+      "codigo": "CVP",
+      "nombre": "Progenitora Variable"
+    },
+    "12": {
+      "clase": "organo",
+      "codigo": "CP",
+      "nombre": "Central Primario"
+    },
+    "13": {
+      "clase": "organo",
+      "codigo": "CD",
+      "nombre": "Central Distribuidor"
+    },
+    "14": {
+      "clase": "organo",
+      "codigo": "CRE",
+      "nombre": "Central Regulador Evolutivo"
+    },
+    "15": {
+      "clase": "organo",
+      "codigo": "ODE",
+      "nombre": "\u00d3rgano de Enlace"
+    },
+    "16": {
+      "clase": "organo",
+      "codigo": "ODE+",
+      "nombre": "\u00d3rgano de Enlace Plus"
+    }
+  },
+  "conexiones": {
+    "1": {
+      "id": "CON1",
+      "origen": "C-G",
+      "destino": "C-CEA",
+      "tipo": "energ\u00e9tica"
+    },
+    "2": {
+      "id": "CON2",
+      "origen": "C-G",
+      "destino": "C-S",
+      "tipo": "control"
+    }
+  },
+  "racks": {
+    "1": {
+      "id": "RACK1",
+      "nombre": "Rack demo",
+      "generadores": [
+        "G-M100",
+        "G-I1K"
+      ],
+      "capacidad_kw": 1.1,
+      "ubicacion": "Principal",
+      "estado": "operativo"
+    }
+  }
+}

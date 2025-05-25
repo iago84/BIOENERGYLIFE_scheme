@@ -1,14 +1,9 @@
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
-from controller import cargar_inicial, evolucionar, impulsar_celula, randomizar_organismo_param, desconectar_celulas, crear_celula
-from db import celulas_table, organulos_table, logs_table
-import os
+
 from controller import (
-    obtener_estado_red, instanciar_celula_tipo, editar_celula,
-    eliminar_celula, conectar_celulas, evolucionar, clonar_celula,
-    reiniciar_red
+    evolucionar, cargar_inicial, crear_celula, impulsar_celula
 )
-from parche_validaciones import crear_celula_validada
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 CORS(app)
@@ -17,7 +12,8 @@ CORS(app)
 cargar_inicial()
 
 # === ENDPOINTS CRUD UNIVERSAL ===
-from db import celulas_table, organulos_table, generadores_table
+from db import celulas_table, organulos_table, generadores_table, logs_table, racks_table
+
 
 # --- CELULAS ---
 @app.route("/api/celulas", methods=["GET"])
@@ -138,8 +134,7 @@ def api_delete_conexion(cid):
 
 
 
-from parche_validaciones import expandir_rack_validado
-from db import racks_table
+
 
 @app.route("/api/racks", methods=["POST"])
 def api_post_rack():
@@ -156,7 +151,7 @@ def api_post_rack():
         return jsonify({"ok": False, "error": str(e)}), 400
 
 
-from parche_validaciones import validar_red_global
+
 
 @app.route("/api/red/validar", methods=["GET"])
 def api_validar_red():
